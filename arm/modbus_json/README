@@ -1,0 +1,16 @@
+Building:
+
+Cross-build for ARM:
+cd build
+export ARM_TOOLCHAIN_PATH=<your ARM toolchain root path>
+<<e.g. export ARM_TOOLCHAIN_PATH=/work/ARM-toolcahin/oe/>>
+make -f makefile-ARM clean all
+
+For x86
+cd build
+make -f makefile-x86 clean all
+
+Running:
+to run the binary enter ./modbus_json <URL>
+<<e.g ./modbus_json http/myserver.com>>
+ 
