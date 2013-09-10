@@ -1,8 +1,11 @@
 
 
+CC=arm-linux-gcc
+PKGCONFIG=arm-linux-pkg-config
+
 CFLAGS += -O2 -Werror -Wall -Wextra -fno-builtin -ggdb3 -fPIC -D_GNU_SOURCE
-CFLAGS += $(shell pkg-config --cflags libmodbus)
-LIBS += $(shell pkg-config --libs libmodbus)
+CFLAGS += $(shell $(PKGCONFIG) --cflags libmodbus)
+LIBS += $(shell $(PKGCONFIG) --libs libmodbus)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<
