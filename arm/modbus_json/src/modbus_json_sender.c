@@ -7,23 +7,22 @@
 
 #include <string.h>
 #include <malloc.h>
-#include "curl/curl.h"
+#include <errno.h>
 
+#include "curl/curl.h"
 #include "modbus_json.h"
 
 volatile int modbus_json_sender_loop_on = 1;
 
-int modbus_json_sender_loop(FILE *stream, char* URL)
+int modbus_json_sender_loop(FILE *stream, char* URL, int dummy_writes)
 {
   //buffers and helpers
-  size_t json_buffer_size = 10 * 1024;
+  size_t json_buffer_size = 2 * 1024;
   char *json_buffer = malloc(json_buffer_size);
-  char *json_buffer_pointer = json_buffer;
-  char buffer[1024];
 
   //curl data
   CURL* curl_handle;
-  CURLcode curl_result;
+  CURLcode curl_result = CURLE_OK;
 
   //Initialise curl
   curl_global_init(CURL_GLOBAL_ALL);
@@ -37,43 +36,117 @@ int modbus_json_sender_loop(FILE *stream, char* URL)
     curl_easy_setopt(curl_handle, CURLOPT_URL, URL);
   }
 
-  while (modbus_json_sender_loop_on
-      && !feof(stream)
-      && !ferror(stream)
-      && fgets(buffer, sizeof(buffer), stream) != NULL)
+  while (modbus_json_sender_loop_on)
   {
+    ENERGY_METER_PACKET energy_packet;
+    int count;
+    size_t read_size = fread(&energy_packet, sizeof(ENERGY_METER_PACKET), 1, stream);
 
-    //end of JSON received, post data
-    if (strcmp(buffer, JSON_STOP_TOKEN) == 0)
+    if (read_size)
     {
-      printf(json_buffer);
+      //remove extra new line
+      energy_packet.timestamp[strlen(energy_packet.timestamp) - 1] = 0;
 
-      curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, json_buffer);
-      curl_result = curl_easy_perform(curl_handle);
-      if(curl_result != CURLE_OK)
+      if (energy_packet.type == ENERGY_METER_PACK_TYPE_ENERGY)
       {
-        fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(curl_result));
+
+        count = snprintf(json_buffer, json_buffer_size,
+            "{\n"
+            "\"TimeStamp\":\"%s\",\n"
+            "\"id\":%lu,\n"
+            "\"energy\":%u\n"
+            "}\n",
+            energy_packet.timestamp,
+            energy_packet.id,
+            energy_packet.payload.tab_reg[0]
+            );
+      }
+      else if (energy_packet.type == ENERGY_METER_PACK_TYPE_DETAILS)
+      {
+
+        count = snprintf(json_buffer, json_buffer_size,
+            "{\n"
+            "\"TimeStamp\":\"%s\",\n"
+            "\"id\":%lu,\n"
+            "\"voltage1\":%u,\n"
+            "\"voltage2\":%u,\n"
+            "\"voltage3\":%u,\n"
+            "\"voltage13\":%u,\n"
+            "\"voltage23\":%u,\n"
+            "\"voltage31\":%u,\n"
+            "\"current1\":%u,\n"
+            "\"current2\":%u,\n"
+            "\"current3\":%u,\n"
+            "\"actPower1\":%u,\n"
+            "\"actPower2\":%u,\n"
+            "\"actPower3\":%u,\n"
+            "\"reactPower1\":%u,\n"
+            "\"reactPower2\":%u,\n"
+            "\"reactPower3\":%u,\n"
+            "\"currentN\":%u,\n"
+            "\"frequency\":%u,\n"
+            "\"appCurrent1\":%u,\n"
+            "\"appCurrent2\":%u,\n"
+            "\"appCurrent3\":%u\n"
+            "}\n",
+            energy_packet.timestamp,
+            energy_packet.id,
+            energy_packet.payload.tab_reg[VOLTAGE_1],
+            energy_packet.payload.tab_reg[VOLTAGE_2],
+            energy_packet.payload.tab_reg[VOLTAGE_3],
+            energy_packet.payload.tab_reg[VOLTAGE_12],
+            energy_packet.payload.tab_reg[VOLTAGE_23],
+            energy_packet.payload.tab_reg[VOLTAGE_31],
+            energy_packet.payload.tab_reg[CURRENT_1],
+            energy_packet.payload.tab_reg[CURRENT_2],
+            energy_packet.payload.tab_reg[CURRENT_3],
+            energy_packet.payload.tab_reg[ACT_POWER_1],
+            energy_packet.payload.tab_reg[ACT_POWER_2],
+            energy_packet.payload.tab_reg[ACT_POWER_3],
+            energy_packet.payload.tab_reg[REACT_POWER_1],
+            energy_packet.payload.tab_reg[REACT_POWER_2],
+            energy_packet.payload.tab_reg[REACT_POWER_3],
+            energy_packet.payload.tab_reg[CURRENT_N],
+            energy_packet.payload.tab_reg[FREQUENCY],
+            energy_packet.payload.tab_reg[APP_POWER_1],
+            energy_packet.payload.tab_reg[APP_POWER_2],
+            energy_packet.payload.tab_reg[APP_POWER_3]
+            );
       }
 
-      json_buffer_pointer = json_buffer;
-    }
-    else //continue to collect data
-    {
-      size_t size = strlen(buffer);
-      //need more memory?
-      if (json_buffer_size < (json_buffer_pointer - json_buffer + size))
+
+      if (count < 0)
       {
-        size_t used_size = json_buffer_pointer - json_buffer;
-        json_buffer_size += 10 * 1024;
-        json_buffer = realloc(json_buffer, json_buffer_size);
-        json_buffer_pointer = json_buffer + used_size;
-        printf("Reallocated json buffer to %u\n", (unsigned int)json_buffer_size);
+        fprintf(stderr, "Failed to format json data using snprintf: %s\n",
+            strerror(errno));
+        exit(EXIT_FAILURE);
       }
-      //append new line into buffer
-      memcpy(json_buffer_pointer, buffer, size);
-      json_buffer_pointer += size;
+      if (json_buffer_size <= count)
+      {
+        fprintf(stderr,
+            "Buffer is not big enough (%u) to format json data. %s\n",
+            (int) json_buffer_size, strerror(errno));
+        exit(EXIT_FAILURE);
+      }
+
+      if (dummy_writes)
+      {
+        printf(json_buffer);
+      }
+      else
+      {
+        curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, json_buffer);
+        curl_result = curl_easy_perform(curl_handle);
+        if (curl_result != CURLE_OK)
+        {
+          fprintf(stderr, "curl_easy_perform() failed: %s\n",
+              curl_easy_strerror(curl_result));
+        }
+      }
     }
   }
+
+
 
   //cleanup curl
   curl_easy_cleanup(curl_handle);
