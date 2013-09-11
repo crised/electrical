@@ -10,7 +10,9 @@ Electrical M2M software to get an Electrical Bill approximation
 2. Mock of the ARM Device, that POSTS electrical variable.
 
 
-EJB, CDI, Entities, @Path.
+EJB, CDI, Entities, JAX-RS, Arquillian. 
+
+PostgreSQL on backend.
 
 We will move to Java EE 7 eventually.
 
