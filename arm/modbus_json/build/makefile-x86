@@ -2,7 +2,7 @@
 #LIBDIR=-L$(CURDIR)/../deps/libs -L$(ARM_TOOLCHAIN_PATH)/usr/lib
 INCLUDES=-I$(CURDIR)/../deps/modbus/include/modbus
 CC=gcc
-LIBS := -lcurl -lmodbus
+LIBS := -lcurl -lmodbus -lpthread
 
 ifeq ($(USE_DUMMY_MODBUS), 1)
   DEFINES+=-DUSE_DUMMY_MODBUS=1
