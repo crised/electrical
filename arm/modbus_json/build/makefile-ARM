@@ -1,7 +1,16 @@
 
-LIBDIR=-L$(CURDIR)/../deps/libs -L$(ARM_TOOLCHAIN_PATH)/usr/lib
-INCLUDES=$(CURDIR)/../deps/include
+LIBDIR=-L$(CURDIR)/../deps/libs -L$(CURDIR)/../deps/modbus/lib -L$(ARM_TOOLCHAIN_PATH)/usr/lib
+INCLUDES=-I$(CURDIR)/../deps/include -I$(CURDIR)/../deps/modbus/include/modbus
 CC=$(ARM_TOOLCHAIN_PATH)/bin/arm-linux-gcc
+LIBS := -lcurl -lmodbus -lrt -lz
+
+ifeq ($(USE_DUMMY_MODBUS), 1)
+  DEFINES+=-DUSE_DUMMY_MODBUS=1
+endif
+ifeq ($(USE_DUMMY_HTTP), 1)
+  DEFINES+=-DUSE_DUMMY_HTTP=1
+endif
+
 
 RM := rm -rf
 
@@ -9,7 +18,6 @@ RM := rm -rf
 -include sources.mk
 -include src/subdir.mk
 -include subdir.mk
--include objects.mk
 
 ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(strip $(C_DEPS)),)
