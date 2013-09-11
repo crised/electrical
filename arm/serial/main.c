@@ -325,24 +325,29 @@ int main(int argc, char *args[])
 	}
 
 	int pid = fork();
-	if (pid < 0) {
-		CRIT("Fork json sender failed. Error: %m");
-	}
+	switch(pid)
+	{
+		case -1: // Error during fork
+			CRIT("Fork json sender failed. Error: %m");
+			break;
 
-	if (0 < pid) { // parent process should read serial data and send json by pipe
-		close(pipefd[0]); // Close unused read end
-		modbus_t * ctx = NULL;
-		if(argc == 3)
-			ctx = init_modbus_serial(args[2]);
-		else
-			ctx = init_modbus_tcp(args[2], args[3]);
-		modbus_reader(ctx);
+		case 0: // Child process
+			close(pipefd[1]); // close unused write end
+			printf("Child to send json data...");
+			break;
 
-		wait(NULL); // wait for child process (never gets control however)
-		return 0;
-	} else { // pid == 0
-		close(pipefd[1]); // close unused write end
-		printf("Child to send json data...");
+		default: // Parent process
+			// Should read serial data and send json by pipe
+			close(pipefd[0]); // Close unused read end
+			modbus_t * ctx = NULL;
+			if(argc == 3)
+				ctx = init_modbus_serial(args[2]);
+			else
+				ctx = init_modbus_tcp(args[2], args[3]);
+			modbus_reader(ctx);
+
+			wait(NULL); // wait for child process (never gets control however)
+			return 0;
 	}
 
 	closelog();
