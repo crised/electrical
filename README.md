@@ -12,6 +12,8 @@ Electrical M2M software to get an Electrical Bill approximation
 
 EJB, CDI, Entities, JAX-RS, Arquillian. 
 
+AngularJS in the front of the RESTFul API.
+
 PostgreSQL on backend.
 
 We will move to Java EE 7 eventually.
