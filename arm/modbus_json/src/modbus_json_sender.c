@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <poll.h>
 #include <pthread.h>
+#include <jansson.h>
 
 #include "curl/curl.h"
 #include "modbus_json.h"
@@ -155,75 +156,52 @@ void* backup_sender_thread(void* args)
 }
 
 
-void convert_to_json(char* json_buffer, ENERGY_METER_PACKET* energy_packet, size_t max_size)
+char* convert_to_json(ENERGY_METER_PACKET* energy_packet)
 {
-  int count = 0;
+  char* json_string = NULL;
+  json_t* json_object = NULL;
+
   switch (energy_packet->type)
   {
   case ENERGY_METER_PACK_TYPE_ENERGY:
     {
-      count = snprintf(json_buffer, max_size,
-          "{\n"
-          "\"TimeStamp\":\"%s\",\n"
-          "\"id\":%lu,\n"
-          "\"energy\":%u\n"
-          "}\n",
-          energy_packet->timestamp,
-          energy_packet->id,
-          energy_packet->payload.tab_reg[0]
-          );
+      json_object = json_pack(
+          "{s:s s:i"
+          "s:i}",
+          "TimeStamp",  energy_packet->timestamp,
+          "id",         energy_packet->id,
+          "energy",     energy_packet->payload.tab_reg[0]
+       );
     }
     break;
   case ENERGY_METER_PACK_TYPE_DETAILS:
     {
-      count = snprintf(json_buffer, max_size,
-          "{\n"
-          "\"TimeStamp\":\"%s\",\n"
-          "\"id\":%lu,\n"
-          "\"voltage1\":%u,\n"
-          "\"voltage2\":%u,\n"
-          "\"voltage3\":%u,\n"
-          "\"voltage13\":%u,\n"
-          "\"voltage23\":%u,\n"
-          "\"voltage31\":%u,\n"
-          "\"current1\":%u,\n"
-          "\"current2\":%u,\n"
-          "\"current3\":%u,\n"
-          "\"actPower1\":%u,\n"
-          "\"actPower2\":%u,\n"
-          "\"actPower3\":%u,\n"
-          "\"reactPower1\":%u,\n"
-          "\"reactPower2\":%u,\n"
-          "\"reactPower3\":%u,\n"
-          "\"currentN\":%u,\n"
-          "\"frequency\":%u,\n"
-          "\"appCurrent1\":%u,\n"
-          "\"appCurrent2\":%u,\n"
-          "\"appCurrent3\":%u\n"
-          "}\n",
-          energy_packet->timestamp,
-          energy_packet->id,
-          energy_packet->payload.tab_reg[VOLTAGE_1],
-          energy_packet->payload.tab_reg[VOLTAGE_2],
-          energy_packet->payload.tab_reg[VOLTAGE_3],
-          energy_packet->payload.tab_reg[VOLTAGE_12],
-          energy_packet->payload.tab_reg[VOLTAGE_23],
-          energy_packet->payload.tab_reg[VOLTAGE_31],
-          energy_packet->payload.tab_reg[CURRENT_1],
-          energy_packet->payload.tab_reg[CURRENT_2],
-          energy_packet->payload.tab_reg[CURRENT_3],
-          energy_packet->payload.tab_reg[ACT_POWER_1],
-          energy_packet->payload.tab_reg[ACT_POWER_2],
-          energy_packet->payload.tab_reg[ACT_POWER_3],
-          energy_packet->payload.tab_reg[REACT_POWER_1],
-          energy_packet->payload.tab_reg[REACT_POWER_2],
-          energy_packet->payload.tab_reg[REACT_POWER_3],
-          energy_packet->payload.tab_reg[CURRENT_N],
-          energy_packet->payload.tab_reg[FREQUENCY],
-          energy_packet->payload.tab_reg[APP_POWER_1],
-          energy_packet->payload.tab_reg[APP_POWER_2],
-          energy_packet->payload.tab_reg[APP_POWER_3]
-          );
+      json_object = json_pack(
+          "{s:s s:i"
+          "s:i s:i s:i s:i s:i s:i s:i s:i s:i s:i s:i s:i s:i s:i s:i s:i s:i s:i s:i s:i}",
+          "TimeStamp",    energy_packet->timestamp,
+          "id",           energy_packet->id,
+          "voltage1",     energy_packet->payload.tab_reg[VOLTAGE_1],
+          "voltage2",     energy_packet->payload.tab_reg[VOLTAGE_2],
+          "voltage3",     energy_packet->payload.tab_reg[VOLTAGE_3],
+          "voltage13",    energy_packet->payload.tab_reg[VOLTAGE_12],
+          "voltage23",    energy_packet->payload.tab_reg[VOLTAGE_23],
+          "voltage31",    energy_packet->payload.tab_reg[VOLTAGE_31],
+          "current1",     energy_packet->payload.tab_reg[CURRENT_1],
+          "current2",     energy_packet->payload.tab_reg[CURRENT_2],
+          "current3",     energy_packet->payload.tab_reg[CURRENT_3],
+          "actPower1",    energy_packet->payload.tab_reg[ACT_POWER_1],
+          "actPower2",    energy_packet->payload.tab_reg[ACT_POWER_2],
+          "actPower3",    energy_packet->payload.tab_reg[ACT_POWER_3],
+          "reactPower1",  energy_packet->payload.tab_reg[REACT_POWER_1],
+          "reactPower2",  energy_packet->payload.tab_reg[REACT_POWER_2],
+          "reactPower3",  energy_packet->payload.tab_reg[REACT_POWER_3],
+          "currentN",     energy_packet->payload.tab_reg[CURRENT_N],
+          "frequency",    energy_packet->payload.tab_reg[FREQUENCY],
+          "appCurrent1",  energy_packet->payload.tab_reg[APP_POWER_1],
+          "appCurrent2",  energy_packet->payload.tab_reg[APP_POWER_2],
+          "appCurrent3",  energy_packet->payload.tab_reg[APP_POWER_3]
+      );
     }
     break;
   default:
@@ -232,27 +210,15 @@ void convert_to_json(char* json_buffer, ENERGY_METER_PACKET* energy_packet, size
     break;
   }
 
-  if (count < 0)
+  if(json_object)
   {
-    fprintf(stderr, "Failed to format json data using snprintf: %s\n",
-        strerror(errno));
-    exit(EXIT_FAILURE);
+    json_string = json_dumps(json_object, JSON_PRESERVE_ORDER | JSON_INDENT(1));
   }
-  if (max_size <= count)
-  {
-    fprintf(stderr,
-        "Buffer is not big enough (%u) to format json data. %s\n",
-        (int) max_size, strerror(errno));
-    exit(EXIT_FAILURE);
-  }
+  return json_string;
 }
 
 int modbus_json_sender_loop(FILE *stream, char* URL, int dummy_writes)
 {
-  //buffers and helpers
-  size_t json_buffer_size = 2 * 1024;
-  char *json_buffer = malloc(json_buffer_size);
-
   //curl data
   CURL* curl_handle;
   CURLcode curl_result = CURLE_OK;
@@ -262,6 +228,9 @@ int modbus_json_sender_loop(FILE *stream, char* URL, int dummy_writes)
 
   //buffer file
   FILE *buffer_file_r, *buffer_file_w;
+
+  //json buffer
+  char* json_buffer = NULL;
 
   //open write file, same file, one r one w
   {
@@ -312,13 +281,14 @@ int modbus_json_sender_loop(FILE *stream, char* URL, int dummy_writes)
     {
       //remove extra new line
       energy_packet.timestamp[strlen(energy_packet.timestamp) - 1] = 0;
-      convert_to_json(json_buffer, &energy_packet, json_buffer_size);
+      json_buffer = convert_to_json(&energy_packet);
 
       if (!get_file_mode())
       {
         if (dummy_writes)
         {
           printf(json_buffer);
+          printf("\n");
         }
         else
         {
@@ -336,6 +306,7 @@ int modbus_json_sender_loop(FILE *stream, char* URL, int dummy_writes)
       if (get_file_mode() || switch_to_file_mode)
       {
         if (   fwrite(json_buffer, strlen(json_buffer), 1, buffer_file_w) != 1
+            || fwrite("\n", strlen("\n"), 1, buffer_file_w) != 1
             || fwrite(JSON_STOP_TOKEN, strlen(JSON_STOP_TOKEN), 1, buffer_file_w) != 1
             || fwrite(JSON_NOTSENT_TOKEN, strlen(JSON_NOTSENT_TOKEN), 1, buffer_file_w) != 1)
         {
@@ -344,6 +315,8 @@ int modbus_json_sender_loop(FILE *stream, char* URL, int dummy_writes)
         }
         fflush(buffer_file_w);
       }
+
+      free(json_buffer);
     }
 
     //spawn a thread that tries to send the backup file contents
