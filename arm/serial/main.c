@@ -270,17 +270,21 @@ static void daemonize(const char * name)
 	pid_t pid, sid;
 
 	pid = fork();
-	if (pid < 0) {
-		CRIT("Fork to daemonize failed. Error: %m");
-	}
+	switch(pid)
+	{
+		case -1: // Error during fork
+			CRIT("Fork to daemonize failed. Error: %m");
+			break;
 
-	if (0 < pid) {
-		INFO("We have the daemon child with pid %d. Exiting from parent process ...", pid);
-		printf("Daemonized.\n");
-		exit(EXIT_SUCCESS);
-	}
+		case 0: // Child process
+			INFO("daemonized");
+			break;
 
-	INFO("daemonized");
+		default: // Parent process
+			INFO("We have the daemon child with pid %d. Exiting from parent process ...", pid);
+			printf("Daemonized.\n");
+			exit(EXIT_SUCCESS);
+	}
 
 	signal(SIGHUP, SIG_IGN); /* not to exit when terminal is closed */
 
