@@ -2,7 +2,7 @@
 LIBDIR=-L$(CURDIR)/../deps/libs -L$(CURDIR)/../deps/modbus/lib -L$(ARM_TOOLCHAIN_PATH)/usr/lib
 INCLUDES=-I$(CURDIR)/../deps/include -I$(CURDIR)/../deps/modbus/include/modbus
 CC=$(ARM_TOOLCHAIN_PATH)/bin/arm-linux-gcc
-LIBS := -lcurl -lmodbus -lrt -lz
+LIBS := -lcurl -lmodbus -lrt -lz -lpthread
 
 ifeq ($(USE_DUMMY_MODBUS), 1)
   DEFINES+=-DUSE_DUMMY_MODBUS=1

@@ -5,12 +5,17 @@
  *      Author: rnicolau
  */
 
-//#define JSON_START_TOKEN  "#START\n"
-#define JSON_STOP_TOKEN   "#STOP\n"
+#define JSON_STOP_TOKEN     "#JSON_END\n"
+#define JSON_SENT_TOKEN     "#:1\n"
+#define JSON_NOTSENT_TOKEN  "#:0\n"
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+
+
+#define JSON_BUFFER_FILE_NAME "json_buffer.txt"
+#define JSON_SENDER_LOOP_CLOCK (500) //milliseconds
 
 
 #define DETAIL_READ_PERIOD    5 * 1000 * 1000 // microseconds
