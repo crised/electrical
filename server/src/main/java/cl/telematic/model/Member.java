@@ -16,7 +16,8 @@
  */
 package cl.telematic.model;
 
-import java.io.Serializable;
+import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -29,9 +30,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
-
-import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.NotEmpty;
+import java.io.Serializable;
 
 @SuppressWarnings("serial")
 @Entity
@@ -39,53 +38,62 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Table(name="member", uniqueConstraints = @UniqueConstraint(columnNames = "email"))
 public class Member implements Serializable {
 
+    @NotNull
+    @NotEmpty
+    @Email
+    @Column(name = "EMAIL", nullable = false)
+    private String email;
+
     @Id
     @GeneratedValue
+//    TODO let's use sequence generators instead of hibernate_sequences table
     private Long id;
-    
-    @NotNull
-    @Size(min = 1, max = 25)
-    private String username;
-   
 
     @NotNull
     @Size(min = 1, max = 25)
     @Pattern(regexp = "[^0-9]*", message = "Must not contain numbers")
+    @Column(name = "NAME", nullable = false)
     private String name;
-
-    @NotNull
-    @NotEmpty
-    @Email
-    private String email;
 
     @NotNull
     @Size(min = 10, max = 12)
     @Digits(fraction = 0, integer = 12)
-    @Column(name = "phone_number")
+    @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
 
-    public Long getId() {
-        return id;
-    }
+    @NotNull
+    @Size(min = 1, max = 25)
+    @Column(name = "USERNAME", nullable = false)
+    private String username;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
+    public String getEmail()
+    {
         return email;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(String email)
+    {
         this.email = email;
+    }
+
+    public Long getId()
+    {
+        return id;
+    }
+
+    public void setId(Long id)
+    {
+        this.id = id;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
     }
 
     public String getPhoneNumber() {
@@ -104,5 +112,24 @@ public class Member implements Serializable {
 		this.username = username;
 	}
 
-   
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Member)) {
+            return false;
+        }
+
+        Member that = (Member) o;
+
+        return !(getId() != null ? !getId().equals(that.getId()) : that.getId() != null);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return getId() != null ? getId().hashCode() : 0;
+    }
 }

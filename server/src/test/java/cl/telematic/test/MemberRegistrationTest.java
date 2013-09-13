@@ -16,12 +16,9 @@
  */
 package cl.telematic.test;
 
-import static org.junit.Assert.assertNotNull;
-
-import java.util.logging.Logger;
-
-import javax.inject.Inject;
-
+import cl.telematic.business.MemberManager;
+import cl.telematic.model.Member;
+import cl.telematic.util.Resources;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -31,16 +28,17 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import cl.telematic.model.Member;
-import cl.telematic.service.MemberRegistration;
-import cl.telematic.util.Resources;
+import javax.inject.Inject;
+import java.util.logging.Logger;
+
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(Arquillian.class)
 public class MemberRegistrationTest {
     @Deployment
     public static Archive<?> createTestArchive() {
         return ShrinkWrap.create(WebArchive.class, "test.war")
-                .addClasses(Member.class, MemberRegistration.class, Resources.class)
+                .addClasses(Member.class, MemberManager.class, Resources.class)
                 .addAsResource("META-INF/test-persistence.xml", "META-INF/persistence.xml")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 // Deploy our test datasource
@@ -48,7 +46,7 @@ public class MemberRegistrationTest {
     }
 
     @Inject
-    MemberRegistration memberRegistration;
+    MemberManager memberRegistration;
 
     @Inject
     Logger log;

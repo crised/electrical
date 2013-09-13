@@ -14,33 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cl.telematic.service;
+package cl.telematic.model;
 
-import cl.telematic.model.Member;
+import javax.persistence.Column;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.validation.constraints.NotNull;
+import javax.xml.bind.annotation.XmlRootElement;
 
-import javax.ejb.Stateless;
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
+@XmlRootElement
+@Entity
+@DiscriminatorValue("ATE")
+public class ActiveTotalEnergyStats extends StatsEntry {
 
-import java.util.logging.Logger;
+    @NotNull
+    @Column(name = "ACTIVE_TOTAL_ENERGY")
+    private Integer activeTotalEnergy;
 
-// The @Stateless annotation eliminates the need for manual transaction demarcation
-@Stateless
-public class MemberRegistration {
+    public Integer getActiveTotalEnergy()
+    {
+        return activeTotalEnergy;
+    }
 
-    @Inject
-    private Logger log;
-
-    @Inject
-    private EntityManager em;
-
-    @Inject
-    private Event<Member> memberEventSrc;
-
-    public void register(Member member) throws Exception {
-        log.info("Registering " + member.getName());
-        em.persist(member);
-        memberEventSrc.fire(member);
+    public void setActiveTotalEnergy(Integer activeTotalEnergy)
+    {
+        this.activeTotalEnergy = activeTotalEnergy;
     }
 }

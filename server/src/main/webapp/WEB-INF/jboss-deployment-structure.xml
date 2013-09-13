@@ -1,0 +1,12 @@
+<jboss-deployment-structure>
+    <deployment>
+        <dependencies>
+            <module name="com.sun.xml.bind" services="import"/>
+            <module name="com.google.guava"/>
+            <module name="org.jboss.resteasy.resteasy-jaxrs" services="import"/>
+            <!--needded for tests-->
+            <module name="org.jboss.resteasy.resteasy-jackson-provider" services="import"/>
+            <module name="org.jboss.resteasy.resteasy-jaxb-provider" services="import"/>
+        </dependencies>
+    </deployment>
+</jboss-deployment-structure>
