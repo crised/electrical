@@ -23,4 +23,10 @@ public class DeviceDAO {
         }
         return device;
     }
+
+    @Nonnull
+    public Device save(@Nonnull Device device)
+    {
+        return entityManager.merge(device);
+    }
 }

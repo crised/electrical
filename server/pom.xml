@@ -23,7 +23,9 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>war</packaging>
     <name>JBoss WFK Quickstart: kitchensink-angularjs</name>
-    <description>A starter Java EE 6 webapp project for use on JBoss AS 7 / EAP 6, generated from the jboss-javaee6-webapp archetype, using AngularJS for the view</description>
+    <description>A starter Java EE 6 webapp project for use on JBoss AS 7 / EAP 6, generated from the jboss-javaee6-webapp archetype, using AngularJS for the
+        view
+    </description>
 
     <url>http://jboss.org/jbossas</url>
     <licenses>
@@ -98,9 +100,16 @@
 
     <dependencies>
 
-            <!-- First declare the APIs we depend on and need for compilation.
-            All of them are provided by JBoss AS 7 -->
-     <!-- Import the CDI API, we use provided scope as the API is included in JBoss AS 7 -->
+        <!-- First declare the APIs we depend on and need for compilation.
+        All of them are provided by JBoss AS 7 -->
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.servlet</groupId>
+            <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Import the CDI API, we use provided scope as the API is included in JBoss AS 7 -->
         <dependency>
             <groupId>javax.enterprise</groupId>
             <artifactId>cdi-api</artifactId>

@@ -18,4 +18,11 @@ public class DeviceManager {
     {
         return deviceDAO.get(deviceId);
     }
+
+    public void ping(@Nonnull Long id, @Nonnull String remoteAddr)
+    {
+        final Device device = deviceDAO.get(id);
+        device.setIp(remoteAddr);
+        deviceDAO.save(device);
+    }
 }
