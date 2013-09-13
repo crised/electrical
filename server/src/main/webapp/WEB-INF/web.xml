@@ -13,11 +13,8 @@
 
     <security-constraint>
         <web-resource-collection>
-            <web-resource-name>Stats posts</web-resource-name>
-            <url-pattern>/rest/members/*</url-pattern>
+            <web-resource-name>Attach authenticator to request in case BasicAuthenticationFilter will need to login</web-resource-name>
+            <url-pattern>/rest/*</url-pattern>
         </web-resource-collection>
-        <auth-constraint>
-            <role-name>user</role-name>
-        </auth-constraint>
     </security-constraint>
 </web-app>

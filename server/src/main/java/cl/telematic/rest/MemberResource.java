@@ -19,6 +19,7 @@ package cl.telematic.rest;
 import cl.telematic.business.MemberManager;
 import cl.telematic.dao.MemberDAO;
 import cl.telematic.model.Member;
+import cl.telematic.security.Authenticated;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -122,6 +123,7 @@ public class MemberResource {
         return member != null;
     }
 
+    @Authenticated
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<Member> listAllMembers()

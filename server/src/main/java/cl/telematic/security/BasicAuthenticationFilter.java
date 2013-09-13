@@ -1,0 +1,74 @@
+package cl.telematic.security;
+
+import org.jboss.resteasy.util.Base64;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.Provider;
+import java.io.IOException;
+import java.util.StringTokenizer;
+import java.util.logging.Logger;
+
+@Provider
+@Authenticated
+public class BasicAuthenticationFilter implements ContainerRequestFilter {
+
+    private static final String AUTHENTICATION_SCHEME = "Basic";
+
+    private static final String AUTHORIZATION_PROPERTY = "Authorization";
+
+    private static Logger LOGGER = Logger.getLogger(BasicAuthenticationFilter.class.getCanonicalName());
+
+    @Context
+    private HttpServletRequest httpServletRequest;
+
+    @Override
+    public void filter(ContainerRequestContext requestContext) throws IOException
+    {
+        if (null != requestContext.getSecurityContext().getUserPrincipal()) {
+            return;
+        }
+        //Get request headers
+        final MultivaluedMap<String, String> headers = requestContext.getHeaders();
+
+        //Fetch authorization header
+        final String authorization = headers.getFirst(AUTHORIZATION_PROPERTY);
+
+        //If no authorization information present; block access
+        if (authorization == null || authorization.isEmpty()) {
+            requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).header("WWW-Authenticate", "Basic realm=\"Realm\"").build());
+            return;
+        }
+
+        //Get encoded username and password
+        final String encodedUserPassword = authorization.replaceFirst(AUTHENTICATION_SCHEME + " ", "");
+
+        //Decode username and password
+        String usernameAndPassword;
+        try {
+            usernameAndPassword = new String(Base64.decode(encodedUserPassword));
+        } catch (IOException e) {
+            LOGGER.severe("Cannot decode credentials Base64");
+            e.printStackTrace();//TODO we probably should use better logger
+            requestContext.abortWith(Response.serverError().build());
+            return;
+        }
+
+        //Split username and password tokens
+        final StringTokenizer tokenizer = new StringTokenizer(usernameAndPassword, ":");
+        final String username = tokenizer.nextToken();
+        final String password = tokenizer.nextToken();
+        try {
+            httpServletRequest.login(username, password);
+        } catch (ServletException e) {
+            LOGGER.severe("Cannot login");
+            e.printStackTrace();//TODO we probably should use better logger
+            requestContext.abortWith(Response.serverError().build());
+        }
+    }
+}
