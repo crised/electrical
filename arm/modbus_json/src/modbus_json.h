@@ -12,28 +12,20 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <syslog.h>
 
 
 #define JSON_BUFFER_FILE_NAME "json_buffer.txt"
-#define JSON_SENDER_LOOP_CLOCK (500) //milliseconds
+#define JSON_SENDER_LOOP_CLOCK 500 //milliseconds
+#define CURL_TIMEOUT 10 //seconds
 
 
 #define DETAIL_READ_PERIOD    5 * 1000 * 1000 // microseconds
 #define ENERGY_READ_PERIOD    3 // on every 3rd occasion a DETAIL read occur
 
 #define REGISTERS_FROM    10679
-#define NUM_OF_REGISTERS  10730 - 10679 + 1
+#define NUM_OF_REGISTERS  (10730 - REGISTERS_FROM + 1)
 
-/* Calculate the memory size needed for json text:
- *
- * {"voltage1":65535,"voltage2":65535,...}
- *
- * Let say a name field will be 20 char long at max, then each field requires 29 bytes.
- *
- * So let say we need 30 bytes * NUM_OF_REGISTERS at most.
- */
-
-#define JSON_BUFFER_SIZE  30 * NUM_OF_REGISTERS
 
 /* 10679-10684 Voltages on line 1, 2, 3; 15 min average */
 #define VOLTAGE_1 0 // * 2 + REGISTERS_FROM = 10679
@@ -73,6 +65,27 @@
 
 /* 7980 Active Total Energy (Wh) */
 #define ACT_TOTAL_ENERGY 7980
+
+
+#ifdef DEBUG
+  #define EMERG(...)      fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n")
+  #define ALERT(...)      fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n")
+  #define CRIT(...)       fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n")
+  #define ERR(...)        fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n")
+  #define WARNING(...)    fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n")
+  #define NOTICE(...)     fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n")
+  #define INFO(...)       fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n")
+  #define DBG(...)        fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n")
+#else
+  #define EMERG(...)      syslog(LOG_EMERG, __VA_ARGS__)
+  #define ALERT(...)      syslog(LOG_ALERT, __VA_ARGS__)
+  #define CRIT(...)       syslog(LOG_CRIT, __VA_ARGS__)
+  #define ERR(...)        syslog(LOG_ERR, __VA_ARGS__)
+  #define WARNING(...)    syslog(LOG_WARNING, __VA_ARGS__)
+  #define NOTICE(...)     syslog(LOG_NOTICE, __VA_ARGS__)
+  #define INFO(...)       syslog(LOG_INFO, __VA_ARGS__)
+  #define DBG(...)        syslog(LOG_DEBUG, __VA_ARGS__)
+#endif
 
 int modbus_json_sender_loop(FILE *stream, char* URL, int dummy_writes);
 int modbus_serial_main(int argc, char *args[], FILE *stream, int dummy_readings);

@@ -32,29 +32,41 @@ int main(int argc, char** argv)
     exit(EXIT_FAILURE);
   }
 
+  openlog(NULL, LOG_CONS | LOG_PID, LOG_USER);
+
   //create pipes
   pipe(file_descriptors);
 
   //create child process
   process_id = fork();
 
-  if (process_id == (pid_t) 0)
+  //check fork() result
+  switch(process_id)
   {
-    //child process, use read end
-    FILE *stream;
-    close(file_descriptors[1]);
-    stream = fdopen(file_descriptors[0], "r");
-    modbus_json_sender_loop(stream, argv[1], USE_DUMMY_HTTP);
-    close(file_descriptors[0]);
-  }
-  else
-  {
-    //parent process, use write end
-    FILE *stream;
-    close(file_descriptors[0]);
-    stream = fdopen(file_descriptors[1], "w");
-    modbus_serial_main(argc, argv, stream, USE_DUMMY_MODBUS);
-    close(file_descriptors[1]);
+  case -1:
+    CRIT("Failed to start process\n");
+    exit(EXIT_FAILURE);
+    break;
+  case 0:
+    {
+      //child process, use read end
+      FILE *stream;
+      close(file_descriptors[1]);
+      stream = fdopen(file_descriptors[0], "r");
+      modbus_json_sender_loop(stream, argv[1], USE_DUMMY_HTTP);
+      close(file_descriptors[0]);
+    }
+    break;
+  default:
+    {
+      //parent process, use write end
+      FILE *stream;
+      close(file_descriptors[0]);
+      stream = fdopen(file_descriptors[1], "w");
+      modbus_serial_main(argc, argv, stream, USE_DUMMY_MODBUS);
+      close(file_descriptors[1]);
+    }
+    break;
   }
 
   return 0;

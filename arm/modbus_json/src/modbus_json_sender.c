@@ -57,11 +57,11 @@ void* backup_sender_thread(void* args)
 
   if (json_buffer == NULL)
   {
-    fprintf(stderr, "Allocation failed\n");
+    CRIT("Allocation failed\n");
     exit(EXIT_FAILURE);
   }
 
-  printf("switching to file mode\n");
+  INFO("Switching to file mode\n");
 
   while(!feof(buffer_file_r)
       && !ferror(buffer_file_r)
@@ -95,12 +95,13 @@ void* backup_sender_thread(void* args)
         //increase buffer
         if (size > max_json_size)
         {
+          WARNING("Increasing json buffer size\n");
           max_json_size = 2 * 1024 + size;
           free (json_buffer);
           json_buffer = malloc(max_json_size);
           if (json_buffer == NULL)
           {
-            fprintf(stderr, "Allocation failed\n");
+            CRIT("Allocation failed\n");
             exit(EXIT_FAILURE);
           }
         }
@@ -116,15 +117,17 @@ void* backup_sender_thread(void* args)
         }
         else
         {
+          curl_easy_setopt(*th_args.curl_handle, CURLOPT_CONNECTTIMEOUT, CURL_TIMEOUT);
+          curl_easy_setopt(*th_args.curl_handle, CURLOPT_TIMEOUT, CURL_TIMEOUT);
           curl_easy_setopt(*th_args.curl_handle, CURLOPT_COPYPOSTFIELDS, json_buffer);
           CURLcode curl_result = curl_easy_perform(*th_args.curl_handle);
           if (curl_result != CURLE_OK)
           {
-            fprintf(stderr, "curl_easy_perform() failed: %s\n",
-                curl_easy_strerror(curl_result));
+            ERR("curl_easy_perform() failed: %s\n", curl_easy_strerror(curl_result));
           }
           else
           {
+            INFO("curl sent OK");
             send_succeeded = 1;
           }
         }
@@ -150,7 +153,7 @@ void* backup_sender_thread(void* args)
     }
   }
 
-  printf("switching off file mode\n");
+  INFO("Switching off file mode\n");
   set_file_mode(0);
   return NULL;
 }
@@ -205,7 +208,7 @@ char* convert_to_json(ENERGY_METER_PACKET* energy_packet)
     }
     break;
   default:
-    fprintf(stderr, "Invalid energy info packet\n");
+    ERR("Invalid energy info packet\n");
     exit(EXIT_FAILURE);
     break;
   }
@@ -213,6 +216,10 @@ char* convert_to_json(ENERGY_METER_PACKET* energy_packet)
   if(json_object)
   {
     json_string = json_dumps(json_object, JSON_PRESERVE_ORDER | JSON_INDENT(1));
+  }
+  else
+  {
+    CRIT("json packing failed\n");
   }
   return json_string;
 }
@@ -239,7 +246,7 @@ int modbus_json_sender_loop(FILE *stream, char* URL, int dummy_writes)
     g_in_file_mode = 0;
     if (buffer_file_w == NULL || buffer_file_r == NULL)
     {
-      fprintf(stderr, "Failed to open buffer file\n");
+      CRIT("Failed to open buffer file\n");
       exit(EXIT_FAILURE);
     }
   }
@@ -250,7 +257,7 @@ int modbus_json_sender_loop(FILE *stream, char* URL, int dummy_writes)
     curl_handle = curl_easy_init();
     if (curl_handle == NULL)
     {
-      fprintf(stderr, "Failed to initialise libcurl\n");
+      CRIT("Failed to initialise libcurl\n");
       exit(EXIT_FAILURE);
     }
     else
@@ -292,13 +299,18 @@ int modbus_json_sender_loop(FILE *stream, char* URL, int dummy_writes)
         }
         else
         {
+          curl_easy_setopt(curl_handle, CURLOPT_CONNECTTIMEOUT, CURL_TIMEOUT);
+          curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT, CURL_TIMEOUT);
           curl_easy_setopt(curl_handle, CURLOPT_COPYPOSTFIELDS, json_buffer);
           curl_result = curl_easy_perform(curl_handle);
           if (curl_result != CURLE_OK)
           {
             switch_to_file_mode = 1;
-            fprintf(stderr, "curl_easy_perform() failed: %s\n",
-                curl_easy_strerror(curl_result));
+            ERR("curl_easy_perform() failed: %s\n", curl_easy_strerror(curl_result));
+          }
+          else
+          {
+            INFO("curl sent OK");
           }
         }
       }
@@ -310,7 +322,7 @@ int modbus_json_sender_loop(FILE *stream, char* URL, int dummy_writes)
             || fwrite(JSON_STOP_TOKEN, strlen(JSON_STOP_TOKEN), 1, buffer_file_w) != 1
             || fwrite(JSON_NOTSENT_TOKEN, strlen(JSON_NOTSENT_TOKEN), 1, buffer_file_w) != 1)
         {
-          fprintf(stderr, "Failed to write to buffer file\n");
+          CRIT("Failed to write to buffer file\n");
           exit(EXIT_FAILURE);
         }
         fflush(buffer_file_w);
