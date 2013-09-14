@@ -32,7 +32,7 @@ These might be refreshed every 2 minutes, not neccesary 2 store all of them in D
 These reading are important, because customer can know if the power is "ON" on his industry.
 These can be just one line:
 
-V1 = 378 V,V2 = 384 V,V3 = 382 V
+V1 = 220 V,V2 = 220 V,V3 = 230 V
 
 Have a calendar selector, that can be used to select range of days. default is only present day.
 Need some kind of overlay or similar to show comments, in each variable.
@@ -53,8 +53,8 @@ Total Detail Accordion
 
 Table Accordion
 ----------------
-Drop Down select *one* menu to choose:**AVG, MIN, MAX** 
-3 *rows*: Phase 1, Phase 2, Phase 3. 
+Drop Down select *one* menu:**AVG, MIN, MAX** 
+Drop Down select *one* phase: Phase 1, Phase 2, Phase 3. 
 
-10 Rows (each of this depent per phase)
+10 Rows:
 Voltage, Current, Active Power, Reactive Power, Apparent Power, Power Factor, Frequency. 
