@@ -6,6 +6,7 @@
  */
 
 #include <unistd.h>
+#include <getopt.h>
 
 #include "modbus_json.h"
 
@@ -17,18 +18,57 @@
 #define USE_DUMMY_HTTP (0)
 #endif
 
+static const struct option long_options[] =
+{
+  { "energy_url",     1, NULL, 'n' },
+  { "error_url",      1, NULL, 'e' },
+  { "serial",         1, NULL, 's' },
+  { "ip",             1, NULL, 'i' },
+  { "port",           1, NULL, 'p' },
+  { NULL, 0, NULL, 0 }
+};
+
+static const char* short_options = "n:e:s:i:p:";
+
+void print_usage()
+{
+  printf("Usage:\n"
+      "-n --energy_url [energy reporting URL]\n"
+      "-e --error_url [error reporting URL]\n"
+      "-s --serial [Modbus serial port]\n"
+      "-i --ip [Modbus IP]\n"
+      "-p --port [Modbus IP port]\n");
+}
+
 int main(int argc, char** argv)
 {
 
   int file_descriptors[2];
   pid_t process_id;
+  char* energy_url = NULL;
+  char* error_url = NULL;
+  char* serial = NULL;
+  char* ip = NULL;
+  char* port = NULL;
+  int next_option;
 
-  if (argc < 3)
+  do
   {
-    printf("Usage:\n"
-        " %s json-destination-url modbus-device-ip modebus-device-port\n"
-        " or\n"
-        " %s json-destination-url serial-device\n", argv[0], argv[0]);
+    next_option = getopt_long (argc, argv, short_options, long_options, NULL);
+    switch (next_option)
+    {
+    case 'n': energy_url = optarg; break;
+    case 'e': error_url = optarg; break;
+    case 's': serial = optarg; break;
+    case 'i': ip = optarg; break;
+    case 'p': port = optarg; break;
+    }
+  } while (next_option != -1);
+
+  if ((energy_url == NULL || error_url == NULL)
+      || (serial == NULL && (ip == NULL || port == NULL)))
+  {
+    print_usage();
     exit(EXIT_FAILURE);
   }
 
@@ -53,7 +93,7 @@ int main(int argc, char** argv)
       FILE *stream;
       close(file_descriptors[1]);
       stream = fdopen(file_descriptors[0], "r");
-      modbus_json_sender_loop(stream, argv[1], USE_DUMMY_HTTP);
+      modbus_json_sender_loop(stream, energy_url, error_url, USE_DUMMY_HTTP);
       close(file_descriptors[0]);
     }
     break;
@@ -63,7 +103,7 @@ int main(int argc, char** argv)
       FILE *stream;
       close(file_descriptors[0]);
       stream = fdopen(file_descriptors[1], "w");
-      modbus_serial_main(argc, argv, stream, USE_DUMMY_MODBUS);
+      modbus_serial_main(serial, ip, port, stream, USE_DUMMY_MODBUS);
       close(file_descriptors[1]);
     }
     break;

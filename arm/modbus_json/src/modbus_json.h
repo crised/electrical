@@ -66,6 +66,12 @@
 /* 7980 Active Total Energy (Wh) */
 #define ACT_TOTAL_ENERGY 7980
 
+/*Max timestamp string size*/
+#define MAX_TIMESTAMP_SIZE 40
+
+/*Max MODBUS error string size*/
+#define MAX_MODBUS_ERR_SIZE 128
+
 
 #ifdef DEBUG
   #define EMERG(...)      fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n")
@@ -87,26 +93,33 @@
   #define DBG(...)        syslog(LOG_DEBUG, __VA_ARGS__)
 #endif
 
-int modbus_json_sender_loop(FILE *stream, char* URL, int dummy_writes);
-int modbus_serial_main(int argc, char *args[], FILE *stream, int dummy_readings);
+int modbus_json_sender_loop(FILE *stream, char* energy_url, char* error_url, int dummy_writes);
+int modbus_serial_main(char* serial, char* ip, char* port, FILE *stream, int dummy_readings);
 
-enum
+enum ENERGY_METER_PACKET_TYPE
 {
   ENERGY_METER_PACK_TYPE_ENERGY,
-  ENERGY_METER_PACK_TYPE_DETAILS
+  ENERGY_METER_PACK_TYPE_DETAILS,
+  ENERGY_METER_PACK_TYPE_ERROR
 };
 
-typedef union ENERGY_METER_PAYLOAD
+typedef struct ENERGY_METER_PACKET_HEADER
 {
-  uint16_t tab_reg[1];
-  uint16_t tab_reg_energy[1];
-  uint16_t tab_reg_details[NUM_OF_REGISTERS];
-}ENERGY_METER_PAYLOAD;
-
-typedef struct ENERGY_METER_PACKET
-{
-  uint16_t type;
-  char timestamp[40];
+  enum ENERGY_METER_PACKET_TYPE type;
   long unsigned id;
-  ENERGY_METER_PAYLOAD payload;
-}ENERGY_METER_PACKET;
+  char timestamp[MAX_TIMESTAMP_SIZE];
+  size_t size;
+}ENERGY_METER_PACKET_HEADER;
+
+
+typedef uint16_t  ENERGY_METER_PACKET_ENERGY[1];
+typedef uint16_t  ENERGY_METER_PACKET_DETAILS[NUM_OF_REGISTERS];
+typedef char      ENERGY_METER_PACKET_ERROR[MAX_MODBUS_ERR_SIZE];
+
+typedef union ENERGY_METER_PACKET_DATA
+{
+  uint16_t reg[1];
+  ENERGY_METER_PACKET_ENERGY energy;
+  ENERGY_METER_PACKET_DETAILS details;
+  ENERGY_METER_PACKET_ERROR error;
+}ENERGY_METER_PACKET_DATA;

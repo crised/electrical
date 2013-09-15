@@ -11,44 +11,70 @@
 #include "modbus_json.h"
 
 
+void sendModbusError(FILE *stream, const char* string, const char* code, long unsigned counter)
+{
+  ENERGY_METER_PACKET_HEADER header;
+  ENERGY_METER_PACKET_DATA data;
+  time_t t = time(NULL);
+
+  header.type = ENERGY_METER_PACK_TYPE_ERROR;
+  header.size = sizeof(ENERGY_METER_PACKET_ERROR);
+  snprintf(header.timestamp, MAX_TIMESTAMP_SIZE, "%s", asctime(gmtime(&t)));
+  header.id = counter;
+
+  snprintf(data.error, MAX_MODBUS_ERR_SIZE, "%s : %s", string, code);
+
+  fwrite(&header, sizeof(ENERGY_METER_PACKET_HEADER), 1, stream);
+  fwrite(&data, header.size, 1, stream);
+  fflush(stream);
+}
+
 
 void readAndSendEnergy(modbus_t * ctx, long unsigned counter, FILE *stream, int dummy_readings)
 {
-  ENERGY_METER_PACKET energy_packet;
+  ENERGY_METER_PACKET_HEADER header;
+  ENERGY_METER_PACKET_DATA data;
   time_t t = time(NULL);
 
-  energy_packet.type = ENERGY_METER_PACK_TYPE_ENERGY;
-  sprintf(energy_packet.timestamp, "%s", asctime(gmtime(&t)));
-  energy_packet.id = counter;
+  header.type = ENERGY_METER_PACK_TYPE_ENERGY;
+  header.size = sizeof(ENERGY_METER_PACKET_ENERGY);
+  snprintf(header.timestamp, MAX_TIMESTAMP_SIZE, "%s", asctime(gmtime(&t)));
+  header.id = counter;
 
   if (dummy_readings == 0) {
-    int rc = modbus_read_registers(ctx, ACT_TOTAL_ENERGY, 1, energy_packet.payload.tab_reg);
+    int rc = modbus_read_registers(ctx, ACT_TOTAL_ENERGY, 1, data.reg);
     if (rc == -1) {
+      sendModbusError(stream, "Failed to read energy register", modbus_strerror(errno), counter);
       ERR("Failed to read energy register. %s\n", modbus_strerror(errno));
     }
   }
 
-  fwrite(&energy_packet, sizeof(ENERGY_METER_PACKET), 1, stream);
+  fwrite(&header, sizeof(ENERGY_METER_PACKET_HEADER), 1, stream);
+  fwrite(&data, header.size, 1, stream);
   fflush(stream);
 }
 
 void readAndSendDetails(modbus_t * ctx, long unsigned counter, FILE *stream, int dummy_readings)
 {
-  ENERGY_METER_PACKET energy_packet;
+  ENERGY_METER_PACKET_HEADER header;
+  ENERGY_METER_PACKET_DATA data;
   time_t t = time(NULL);
 
-  energy_packet.type = ENERGY_METER_PACK_TYPE_DETAILS;
-  sprintf(energy_packet.timestamp, "%s", asctime(gmtime(&t)));
-  energy_packet.id = counter;
+  header.type = ENERGY_METER_PACK_TYPE_DETAILS;
+  header.size = sizeof(ENERGY_METER_PACKET_DETAILS);
+  snprintf(header.timestamp, MAX_TIMESTAMP_SIZE, "%s", asctime(gmtime(&t)));
+  header.id = counter;
 
   if (dummy_readings == 0) {
-    int rc = modbus_read_registers(ctx, REGISTERS_FROM, NUM_OF_REGISTERS, energy_packet.payload.tab_reg);
+    int rc = modbus_read_registers(ctx, REGISTERS_FROM, NUM_OF_REGISTERS, data.reg);
     if (rc == -1) {
+      sendModbusError(stream, "Failed to read energy register", modbus_strerror(errno), counter);
       ERR("Failed to read registers. %s\n", modbus_strerror(errno));
     }
   }
 
-  fwrite(&energy_packet, sizeof(ENERGY_METER_PACKET), 1, stream);
+  fwrite(&header, sizeof(ENERGY_METER_PACKET_HEADER), 1, stream);
+  fwrite(&data, header.size, 1, stream);
   fflush(stream);
 }
 
@@ -116,16 +142,16 @@ void modbus_reader(modbus_t * ctx, FILE *stream, int dummy_readings)
 
 
 
-int modbus_serial_main(int argc, char *args[], FILE *stream, int dummy_readings)
+int modbus_serial_main(char* serial, char* ip, char* port, FILE *stream, int dummy_readings)
 {
   modbus_t * ctx = NULL;
 
   if(dummy_readings == 0)
   {
-    if(argc == 3)
-      ctx = init_modbus_serial(args[2]);
+    if(serial)
+      ctx = init_modbus_serial(serial);
     else
-      ctx = init_modbus_tcp(args[2], args[3]);
+      ctx = init_modbus_tcp(ip, port);
   }
 
   modbus_reader(ctx, stream, dummy_readings);
