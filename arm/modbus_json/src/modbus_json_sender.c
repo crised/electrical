@@ -54,6 +54,7 @@ void* backup_sender_thread(void* args)
   int max_json_size = 10 * 1024;
   char* json_buffer = malloc(max_json_size);
   size_t old_pos = ftell(buffer_file_r);
+  clearerr(buffer_file_r);
 
   if (json_buffer == NULL)
   {
