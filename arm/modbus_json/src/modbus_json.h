@@ -5,7 +5,6 @@
  *      Author: rnicolau
  */
 
-#define JSON_STOP_TOKEN     "#JSON_END\n"
 #define JSON_SENT_TOKEN     "#:1\n"
 #define JSON_NOTSENT_TOKEN  "#:0\n"
 

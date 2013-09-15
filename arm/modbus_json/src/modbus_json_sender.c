@@ -48,113 +48,89 @@ int get_file_mode(SHARED_DATA* shd)
 
 void* backup_sender_thread(void* args)
 {
-  SHARED_DATA sh_data = *(SHARED_DATA*)args;
+  SHARED_DATA* sh_data = (SHARED_DATA*)args;
   char buffer[1024];
-  int max_json_size = 10 * 1024;
-  char* json_buffer = malloc(max_json_size);
-  size_t old_pos = ftell(sh_data.file_r);
-  clearerr(sh_data.file_r);
-
-  if (json_buffer == NULL)
-  {
-    CRIT("Allocation failed\n");
-    exit(EXIT_FAILURE);
-  }
+  size_t old_pos = ftell(sh_data->file_r);
+  clearerr(sh_data->file_r);
 
   INFO("Switching to file mode\n");
 
-  while(!feof(sh_data.file_r)
-      && !ferror(sh_data.file_r)
-      && fgets(buffer, sizeof(buffer), sh_data.file_r) != NULL)
+  while(!feof(sh_data->file_r) && !ferror(sh_data->file_r))
   {
-
-    //end of JSON received, post data
-    if (strncmp(buffer, JSON_STOP_TOKEN, strlen(JSON_STOP_TOKEN)) == 0)
+    json_error_t error;
+    json_t* json_object = json_loadf(sh_data->file_r, JSON_DECODE_ANY | JSON_DISABLE_EOF_CHECK, &error);
+    char* json_string = NULL;
+    if (json_object == NULL)
     {
+      break;
+    }
+    else
+    {
+      int send_succeeded = 0;
+
+      //advance 1 newline
+      fseek(sh_data->file_r, 1, SEEK_CUR);
 
       //get next line to check for sent / not sent
-      if(!feof(sh_data.file_r)
-        && !ferror(sh_data.file_r)
-        && fgets(buffer, sizeof(buffer), sh_data.file_r) != NULL)
+      if(!feof(sh_data->file_r)
+        && !ferror(sh_data->file_r)
+        && fgets(buffer, sizeof(buffer), sh_data->file_r) != NULL)
       {
         if (strncmp(buffer, JSON_SENT_TOKEN, strlen(JSON_SENT_TOKEN)) == 0)
         {
           //was sent, continue
-          old_pos = ftell(sh_data.file_r);
+          old_pos = ftell(sh_data->file_r);
           continue;
         }
       }
 
-      //read and send the data
+      //try to send the data
+      json_string = json_dumps(json_object, JSON_PRESERVE_ORDER | JSON_INDENT(1));
+      if (sh_data->dummy_writes)
       {
-        //get size
-        size_t curr_pos = ftell(sh_data.file_r);
-        size_t size = curr_pos - old_pos;
-        int send_succeeded = 0;
-
-        //increase buffer
-        if (size > max_json_size)
+        printf(json_string);
+        send_succeeded = 1;
+      }
+      else
+      {
+        curl_easy_setopt(sh_data->curl_handle, CURLOPT_CONNECTTIMEOUT, CURL_TIMEOUT);
+        curl_easy_setopt(sh_data->curl_handle, CURLOPT_TIMEOUT, CURL_TIMEOUT);
+        curl_easy_setopt(sh_data->curl_handle, CURLOPT_COPYPOSTFIELDS, json_string);
+        CURLcode curl_result = curl_easy_perform(sh_data->curl_handle);
+        if (curl_result != CURLE_OK)
         {
-          WARNING("Increasing json buffer size\n");
-          max_json_size = 2 * 1024 + size;
-          free (json_buffer);
-          json_buffer = malloc(max_json_size);
-          if (json_buffer == NULL)
-          {
-            CRIT("Allocation failed\n");
-            exit(EXIT_FAILURE);
-          }
+          ERR("curl_easy_perform() failed: %s\n", curl_easy_strerror(curl_result));
         }
-
-        fseek(sh_data.file_r, old_pos, SEEK_SET);
-        fread(json_buffer, size, 1, sh_data.file_r);
-        json_buffer[size - strlen(JSON_SENT_TOKEN) - strlen(JSON_STOP_TOKEN)] = 0;
-
-        if (sh_data.dummy_writes)
+        else
         {
-          printf(json_buffer);
+          INFO("curl sent OK");
           send_succeeded = 1;
-        }
-        else
-        {
-          curl_easy_setopt(sh_data.curl_handle, CURLOPT_CONNECTTIMEOUT, CURL_TIMEOUT);
-          curl_easy_setopt(sh_data.curl_handle, CURLOPT_TIMEOUT, CURL_TIMEOUT);
-          curl_easy_setopt(sh_data.curl_handle, CURLOPT_COPYPOSTFIELDS, json_buffer);
-          CURLcode curl_result = curl_easy_perform(sh_data.curl_handle);
-          if (curl_result != CURLE_OK)
-          {
-            ERR("curl_easy_perform() failed: %s\n", curl_easy_strerror(curl_result));
-          }
-          else
-          {
-            INFO("curl sent OK");
-            send_succeeded = 1;
-          }
-        }
-
-        if (send_succeeded)
-        {
-          //advance to current pos
-          old_pos = ftell(sh_data.file_r);
-          //mark as sent
-          fseek(sh_data.file_r, -strlen(JSON_SENT_TOKEN), SEEK_CUR);
-          fwrite(JSON_SENT_TOKEN, strlen(JSON_SENT_TOKEN), 1, sh_data.file_r);
-
-        }
-        else
-        {
-          //rewind
-          fseek(sh_data.file_r, old_pos, SEEK_SET);
-          //and wait one sec
-          sleep(1);
         }
       }
 
+      if (send_succeeded)
+      {
+        //advance to current pos
+        old_pos = ftell(sh_data->file_r);
+        //mark as sent
+        fseek(sh_data->file_r, -strlen(JSON_SENT_TOKEN), SEEK_CUR);
+        fwrite(JSON_SENT_TOKEN, strlen(JSON_SENT_TOKEN), 1, sh_data->file_r);
+
+      }
+      else
+      {
+        //rewind
+        fseek(sh_data->file_r, old_pos, SEEK_SET);
+        //and wait one sec
+        sleep(1);
+      }
+
+      free(json_string);
     }
   }
 
   INFO("Switching off file mode\n");
-  set_file_mode(0, &sh_data);
+  set_file_mode(0, sh_data);
   return NULL;
 }
 
@@ -337,7 +313,6 @@ int modbus_json_sender_loop(FILE *stream, char* energy_url, char* error_url, int
       {
         if (   fwrite(json_buffer, strlen(json_buffer), 1, sh_data.file_w) != 1
             || fwrite("\n", strlen("\n"), 1, sh_data.file_w) != 1
-            || fwrite(JSON_STOP_TOKEN, strlen(JSON_STOP_TOKEN), 1, sh_data.file_w) != 1
             || fwrite(JSON_NOTSENT_TOKEN, strlen(JSON_NOTSENT_TOKEN), 1, sh_data.file_w) != 1)
         {
           CRIT("Failed to write to buffer file\n");
