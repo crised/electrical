@@ -1,0 +1,87 @@
+<div ng-show="isViewReady()">
+    <ul class="breadcrumb">
+        <li class="logo">Electrical</li>
+        <li><!--suppress HtmlUnknownTarget -->
+            <a href='#!/projects'>My projects</a><span class="divider">/</span></li>
+        <li class="logout"><a ng-click="logout()" ng-controller="LoginCtrl">Logout</a></li>
+        <li class="logout"><a href="#!/me">My account</a><span class="divider"> | </span></li>
+    </ul>
+    <div class="row-fluid view-user-edit">
+        <tabset class="span8 offset2">
+            <tab heading="Personal details">
+                <form ng-submit="save()" class="panel form-horizontal">
+                    <div class="panel-heading">&nbsp;
+                        <div class="panel-controls">
+                            <button class="btn btn-primary" accesskey="s" ng-disabled="!isModified()" tooltip="Save" tooltip-placement="bottom">
+                                <span class="icon-ok icon-white"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="email">Email</label>
+
+                        <div class="controls">
+                            <input id="email" type="text" class="span4" ng-model="user.email" disabled/>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="firstName">First name</label>
+
+                        <div class="controls">
+                            <input id="firstName" type="text" class="span4" ng-model="user.firstName" ng-focus/>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="lastName">Lase name</label>
+
+                        <div class="controls">
+                            <input id="lastName" type="text" class="span4" ng-model="user.lastName"/>
+                        </div>
+                    </div>
+                </form>
+            </tab>
+            <tab heading="Change password">
+                <form ng-submit="changePassword()" class="panel form-horizontal">
+                    <div class="panel-heading">&nbsp
+                        <div class="panel-controls">
+                            <button class="btn btn-primary" accesskey="p">
+                                <span class="icon-ok icon-white"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="currentPassword">Current password</label>
+
+                        <div class="controls">
+                            <input id="currentPassword" type="password" class="span4" ng-model="password.current" required/>
+                        </div>
+                    </div>
+
+
+                    <div class="control-group">
+                        <label class="control-label" for="newPassword">New password</label>
+
+                        <div class="controls">
+                            <input id="newPassword" type="password" class="span4" ng-model="password.new" required/>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="passwordConfirmation">Confirm password</label>
+
+                        <div class="controls">
+                            <input id="passwordConfirmation" type="password" class="span4" ng-model="password.confirmation" required/>
+                        </div>
+                    </div>
+                </form>
+            </tab>
+        </tabset>
+    </div>
+</div>
+<div ng-hide="isViewReady()">
+    Loading...
+</div>
