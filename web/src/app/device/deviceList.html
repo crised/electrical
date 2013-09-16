@@ -1,0 +1,6 @@
+<script type="text/javascript" ng-src="deviceList.js"></script>
+<div ng-controller="DeviceListCtrl">
+	<div ng-repeat="device in devices" ng-click="stats(device.id)">
+        <h1>{{ device.name }}</h1>
+	</div>
+</div>

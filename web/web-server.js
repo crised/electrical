@@ -54,7 +54,7 @@ var proxy = new httpProxy.HttpProxy({target: {host: 'localhost', port: 8080}});
 HttpServer.prototype.handleRequest_ = function (req, res)
 {
     if (req.url.match("^\/rest\/.*")) {
-        req.url = "/electrical-server" + req.url;
+        req.url = "/electricmeter" + req.url;
         proxy.proxyRequest(req, res);
         return;
     }

@@ -7,12 +7,19 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import java.util.List;
 
 @Stateless
 public class DeviceDAO {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Nonnull
+    public List<Device> getDevicesByMember(@Nonnull Long memberId)
+    {
+        return entityManager.createQuery("select d from Device d where d.member.id=:memberId", Device.class).setParameter("memberId", memberId).getResultList();
+    }
 
     @Nonnull
     public Device get(@Nonnull Long id)

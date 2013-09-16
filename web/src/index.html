@@ -46,11 +46,25 @@
                     <label class="control-label" for="inputEmail2">Email</label>
 
                     <div class="controls">
-                        <input type="text" id="inputEmail2" ng-model="credentials.email" required>
+                        <input type="text" id="inputEmail2" ng-model="credentials.email" required autofocus>
                     </div>
                 </div>
                 <div class="control-group">
-                    <label class="control-label" for="inputPassword2">Password</label>
+                    <label class="control-label" for="name">Name</label>
+
+                    <div class="controls">
+                        <input type="text" id="name" ng-model="credentials.name" required placeholder="Your Name">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="phone">Phone</label>
+
+                    <div class="controls">
+                        <input type="text" id="phone" ng-model="credentials.phone" pattern="[0-9]{10,12}" required placeholder="Your Phone #">
+                    </div>
+                </div>
+                <div class="control-group">
+                <label class="control-label" for="inputPassword2">Password</label>
 
                     <div class="controls">
                         <input type="password" id="inputPassword2" ng-model="credentials.password" required>
@@ -85,7 +99,7 @@
 <script src="../vendor/jquery/jquery.cookie.js"></script>
 <script src="app/_app.js"></script>
 <script src="common/services/authenticator.js"></script>
-<script src="common/services/packageDAO.js"></script>
+<script src="common/services/deviceDAO.js"></script>
 <script src="common/services/exceptionHandler.js"></script>
 <script src="common/services/i18n.js"></script>
 <script src="common/services/userDAO.js"></script>
@@ -94,6 +108,8 @@
 <script src="common/directives/ngSuggest.js"></script>
 <script src="common/directives/ngFocus.js"></script>
 <script src="common/directives/ngMessages.js"></script>
+<script src="app/device/_device.js"></script>
+<script src="app/device/deviceList.js"></script>
 <script src="app/users/_users.js"></script>
 <script src="app/users/me.js"></script>
 </body>

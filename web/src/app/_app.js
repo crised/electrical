@@ -1,13 +1,13 @@
 var electrical = angular.module("Electrical",
         ['ui.bootstrap', 'ngResource', 'ngCookies', 'models.MessageFactory', 'http-auth-interceptor', 'services.Authenticator', 'services.ExceptionHandler',
-            'services.UserDAO', 'directives.ngAuthentication', 'directives.ngMessages', 'users']);
+            'services.UserDAO', 'directives.ngAuthentication', 'directives.ngMessages', 'devices', 'users']);
 
 electrical.config(['$routeProvider', '$locationProvider', function ($routeProvider, $locationProvider)
 {
 //    $locationProvider.html5Mode(true);
     $locationProvider.hashPrefix('!');
-    $routeProvider.when('/error', {templateUrl: 'app/error.html'}).when('/me', {controller: 'UserEditCtrl', templateUrl: 'app/users/me.html'}).when("/home",
-            {templateUrl: 'app/home.html'}).otherwise({redirectTo: '/home'});
+    $routeProvider.when('/error', {templateUrl: 'app/error.html'}).when('/me', {controller: 'UserEditCtrl', templateUrl: 'app/users/me.html'}).when("/devices",
+            {controller:'DeviceListCtrl',templateUrl: 'app/device/deviceList.html'}).otherwise({redirectTo: '/devices'});
 
 }]);
 
@@ -89,17 +89,3 @@ angular.isUndefinedOrNull = function (val)
 {
     return angular.isUndefined(val) || val === null
 };
-
-electrical.filter("user", function ()
-{
-    return function (user)
-    {
-        if (angular.isUndefinedOrNull(user)) {
-            return undefined;
-        }
-        var firstName = user["firstName"] || "";
-        var lastName = user["lastName"] || "";
-        var email = user["email"] || "";
-        return firstName.length + lastName.length > 0 ? (firstName + " " + lastName).trim() : email;
-    }
-});
