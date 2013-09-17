@@ -1,16 +1,7 @@
 electrical
 ==========
 
-** Update: Modbus meter is going to be changed for Commercial Reasons.**
-
 Electrical M2M software to get an Electrical Bill approximation
-
-
-2 Projects for now, running different servers:
-
-1. JBoss App Server, that eats the data.
-2. Mock of the ARM Device, that POSTS electrical variable.
-
 
 EJB, CDI, Entities, JAX-RS, Arquillian. 
 
@@ -20,19 +11,63 @@ PostgreSQL on backend.
 
 We will move to Java EE 7 eventually.
 
-
 Link to the docs:
 https://docs.google.com/document/d/1LruXabD3js1uMHJbjtgtn_96fUXqv3CeVnnnc7lMAeA/edit?usp=sharing
 
-Angular JS Front End:
+Read Variables from Meter
+========================
 
-Instant Voltages
+Modbus RTU Frame Format. Not Modbus TCP.
+32 bit values (2 Registers, form one float/double) ByteBuffer to be used here.
+(Java uses two Complement... We might have an issue here?)
+
+Cache Values
+------------
+ 
+1 Second Phase Values
+Starting register: 13.952
+* +0,1 V1 Voltage
+* +2,3 V2 Voltage
+* +4,5 V3 Voltage
+
+1 Second Total Values
+Starting register: 14.336
+* +0,1 Total kW
+* +6,7 Total PF
+
+Persistent Values
 -----------------
+
+Power Demands 
+Integrated in 15`
+Starting Register: 14.592
+* +12,13 kW Import Block Demand
+* +14,15 kvar Import Block Demand
+* +16,17 kVA block Demand
+
+Total Energy
+Starting Register 14.720
+* +0,1 kWh import
+
+Phase Energies
+Starting Register 14848
+* +0,1 kWh import L1
+* +2,3 kWh import L2
+* +4,5 kWh import L3
+
+Angular JS Front End
+====================
+Instant Values
+
 These might be refreshed every 2 minutes, not neccesary 2 store all of them in DB.
 These reading are important, because customer can know if the power is "ON" on his industry.
 These can be just one line:
 
 V1 = 220 V,V2 = 220 V,V3 = 230 V
+1 Second Total Power
+1 Second Total PF
+
+
 
 Have a calendar selector, that can be used to select range of days. default is only present day.
 Need some kind of overlay or similar to show comments, in each variable.
@@ -42,9 +77,10 @@ Main Accordion
 -------------
 This resembles the electrical bill:
 * Energy: KWh for the range, e.g. 670 KWh 
-* Maximum Active Power for the Range:, e.g. 200 KW 
-* Maximum Active Power in between 18:00 - 23:00
-* Power Factor
+* Maximum Total Active Power for the Range:, e.g. 200 KW 
+* Maximum Total Active Power in between 18:00 - 23:00
+* Power Factor: This is Calculated at the maximum power divided by the "matching" apparent power.
+P/S In the same time interval.
 
 Total Detail Accordion
 -------------
@@ -53,8 +89,13 @@ Total Detail Accordion
 
 Table Accordion
 ----------------
+* Energy Phase 1 (Last sample - Initial Sample)
+* Energy Phase 2
+* Energy Phase 3
+
 Drop Down select *one* menu:**AVG, MIN, MAX** 
 Drop Down select *one* phase: Phase 1, Phase 2, Phase 3. 
-
-10 Rows:
-Voltage, Current, Active Power, Reactive Power, Apparent Power, Power Factor, Frequency. 
+3 Rows:
+Voltage, Current, Apparent Power (multiplication of the past and divive by 1000 to get kVA).  
+(Had to delete active and reactive PowerS because meter is not giving 15' Power Factor for each phase,
+we can calculate this in the future so I would keep the select buttons.)
