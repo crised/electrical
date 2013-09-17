@@ -1,13 +1,13 @@
 var electrical = angular.module("Electrical",
         ['ui.bootstrap', 'ngResource', 'ngCookies', 'models.MessageFactory', 'http-auth-interceptor', 'services.Authenticator', 'services.ExceptionHandler',
-            'services.UserDAO', 'directives.ngAuthentication', 'directives.ngMessages', 'devices', 'users']);
+            'services.i18n', 'services.UserDAO', 'directives.ngAuthentication', 'directives.ngMessages', 'directives.ngMsg', 'devices', 'users']);
 
 electrical.config(['$routeProvider', '$locationProvider', function ($routeProvider, $locationProvider)
 {
 //    $locationProvider.html5Mode(true);
     $locationProvider.hashPrefix('!');
-    $routeProvider.when('/error', {templateUrl: 'app/error.html'}).when('/me', {controller: 'UserEditCtrl', templateUrl: 'app/users/me.html'}).when("/devices",
-            {controller:'DeviceListCtrl',templateUrl: 'app/device/deviceList.html'}).otherwise({redirectTo: '/devices'});
+    $routeProvider.when('/error', {templateUrl: 'app/error.html'}).when('/me',
+            {controller: 'UserEditCtrl', templateUrl: 'app/users/me.html'}).otherwise({redirectTo: '/devices'});
 
 }]);
 
@@ -23,7 +23,7 @@ electrical.config(function ($provide)
     });
 });
 
-electrical.controller("LoginCtrl", function ($scope, $location, $route, authService, Authenticator, MessageFactory, UserDAO)
+electrical.controller("LoginCtrl", function ($scope, $location, $route, authService, i18n, Authenticator, MessageFactory, UserDAO)
 {
     var signupMode = false;
     $scope.credentials = {email: null, password: null};
