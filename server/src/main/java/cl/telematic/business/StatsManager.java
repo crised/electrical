@@ -10,6 +10,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.validation.Validator;
+import java.util.Calendar;
 
 @Stateless
 public class StatsManager {
@@ -39,6 +40,9 @@ public class StatsManager {
     {
         Device device = deviceManager.getDevice(deviceId);
         stats.setDevice(device);
+        final Calendar calendar = Calendar.getInstance();
+        calendar.setTime(stats.getCreatedOn());
+        stats.setHour(calendar.get(Calendar.HOUR_OF_DAY));
         return statsDAO.save(stats);
     }
 }

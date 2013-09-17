@@ -1,6 +1,7 @@
 package cl.telematic.rest;
 
 import cl.telematic.model.Device;
+import cl.telematic.model.DeviceStats;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
@@ -17,6 +18,10 @@ import java.util.List;
 @Produces({MediaType.APPLICATION_JSON})
 @Path("/device")
 public interface DeviceResource {
+
+    @GET
+    @Path("/{device}/stats/{start}/{end}")
+    DeviceStats getDeviceStats(@NotNull @PathParam("device") Long id, @NotNull @PathParam("start") Long start, @NotNull @PathParam("end") Long end);
 
     @GET
     @Path("/")

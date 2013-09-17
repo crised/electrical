@@ -1,6 +1,6 @@
 devices.controller('DeviceListCtrl', function ($scope, $location, DeviceDAO)
 {
-    DeviceDAO.query(function (devices)
+    DeviceDAO.getDevices(function (devices)
     {
         $scope.devices = devices;
     });
