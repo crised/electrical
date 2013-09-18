@@ -19,10 +19,10 @@ public class StatsManager {
     private DeviceManager deviceManager;
 
     @EJB
-    private MemberManager memberManager;
+    private StatsDAO statsDAO;
 
     @EJB
-    private StatsDAO statsDAO;
+    private UserManager userManager;
 
     @Inject
     private Validator validator;

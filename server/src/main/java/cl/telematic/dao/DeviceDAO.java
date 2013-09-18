@@ -19,9 +19,9 @@ public class DeviceDAO {
     private EntityManager entityManager;
 
     @Nonnull
-    public List<Device> getDevicesByMember(@Nonnull Long memberId)
+    public List<Device> getDevicesByUser(@Nonnull Long userId)
     {
-        return entityManager.createQuery("select d from Device d where d.member.id=:memberId", Device.class).setParameter("memberId", memberId).getResultList();
+        return entityManager.createQuery("select d from Device d where d.user.id=:userId", Device.class).setParameter("userId", userId).getResultList();
     }
 
     @Nullable

@@ -16,11 +16,11 @@
  */
 package cl.telematic.test;
 
-import cl.telematic.business.MemberManager;
-import cl.telematic.model.Member;
-import cl.telematic.util.Resources;
+import cl.telematic.business.UserManager;
+import cl.telematic.model.User;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -28,38 +28,38 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.inject.Inject;
-import java.util.logging.Logger;
+import javax.ejb.EJB;
 
 import static org.junit.Assert.assertNotNull;
 
 @RunWith(Arquillian.class)
-public class MemberRegistrationTest {
+public class UserRegistrationTest {
+
+    Logger log = Logger.getLogger(UserRegistrationTest.class);
+
+    @EJB
+    UserManager memberRegistration;
+
     @Deployment
-    public static Archive<?> createTestArchive() {
+    public static Archive<?> createTestArchive()
+    {
         return ShrinkWrap.create(WebArchive.class, "test.war")
-                .addClasses(Member.class, MemberManager.class, Resources.class)
-                .addAsResource("META-INF/test-persistence.xml", "META-INF/persistence.xml")
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+            .addClasses(User.class, UserManager.class)
+            .addAsResource("META-INF/test-persistence.xml", "META-INF/persistence.xml")
+            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 // Deploy our test datasource
-                .addAsWebInfResource("test-ds.xml");
+            .addAsWebInfResource("test-ds.xml");
     }
-
-    @Inject
-    MemberManager memberRegistration;
-
-    @Inject
-    Logger log;
 
     @Test
-    public void testRegister() throws Exception {
-        Member newMember = new Member();
-        newMember.setName("Jane Doe");
-        newMember.setEmail("jane@mailinator.com");
-        newMember.setPhoneNumber("2125551234");
-        memberRegistration.register(newMember);
-        assertNotNull(newMember.getId());
-        log.info(newMember.getName() + " was persisted with id " + newMember.getId());
+    public void testRegister() throws Exception
+    {
+        User newUser = new User();
+        newUser.setName("Jane Doe");
+        newUser.setEmail("jane@mailinator.com");
+        newUser.setPhoneNumber("2125551234");
+        memberRegistration.register(newUser);
+        assertNotNull(newUser.getId());
+        log.info(newUser.getName() + " was persisted with id " + newUser.getId());
     }
-
 }

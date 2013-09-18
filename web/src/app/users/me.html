@@ -1,18 +1,12 @@
-<div ng-show="isViewReady()">
-    <ul class="breadcrumb">
-        <li class="logo">Electrical</li>
-        <li><!--suppress HtmlUnknownTarget -->
-            <a href='#!/projects'>My projects</a><span class="divider">/</span></li>
-        <li class="logout"><a ng-click="logout()" ng-controller="LoginCtrl">Logout</a></li>
-        <li class="logout"><a href="#!/me">My account</a><span class="divider"> | </span></li>
-    </ul>
+<div ng-show="isViewReady()" class="container">
     <div class="row-fluid view-user-edit">
         <tabset class="span8 offset2">
             <tab heading="Personal details">
-                <form ng-submit="save()" class="panel form-horizontal">
+                <form name="form" ng-submit="save()" class="panel form-horizontal">
                     <div class="panel-heading">&nbsp;
                         <div class="panel-controls">
-                            <button class="btn btn-primary" accesskey="s" ng-disabled="!isModified()" tooltip="Save" tooltip-placement="bottom">
+                            <button class="btn btn-primary" accesskey="s" ng-disabled="form.$invalid || !isModified()" tooltip="Save"
+                                    tooltip-placement="bottom">
                                 <span class="icon-ok icon-white"></span>
                             </button>
                         </div>
@@ -27,18 +21,18 @@
                     </div>
 
                     <div class="control-group">
-                        <label class="control-label" for="firstName">First name</label>
+                        <label class="control-label" for="name">Name</label>
 
                         <div class="controls">
-                            <input id="firstName" type="text" class="span4" ng-model="user.firstName" ng-focus/>
+                            <input id="name" type="text" class="span4" ng-model="user.name" ng-focus/>
                         </div>
                     </div>
 
                     <div class="control-group">
-                        <label class="control-label" for="lastName">Lase name</label>
+                        <label class="control-label" for="phoneNumber">PhoneNumber</label>
 
                         <div class="controls">
-                            <input id="lastName" type="text" class="span4" ng-model="user.lastName"/>
+                            <input id="phoneNumber" type="text" class="span4" ng-model="user.phoneNumber" ng-minlength="10" maxlength="12"/>
                         </div>
                     </div>
                 </form>
@@ -81,7 +75,4 @@
             </tab>
         </tabset>
     </div>
-</div>
-<div ng-hide="isViewReady()">
-    Loading...
 </div>

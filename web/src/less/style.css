@@ -20,6 +20,10 @@ div[ng-messages] .alert {
     margin-bottom: 5px;
 }
 
+input.ng-invalid.ng-dirty {
+    background-color: #FA787E;
+}
+
 /*-------------------------------------------------------------------Template---------------------------------------------------------------------------------*/
 /* feat: before angular is ready, display loading animation */
 body.waiting-for-angular div#initializing-panel {

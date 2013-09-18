@@ -1,0 +1,15 @@
+<div class="container">
+    <div class="row-fluid view-user-edit">
+        <button class="btn btn-primary" accesskey="n" tooltip="Create user" tooltip-placement="bottom" ng-click="register()">
+            <span class="icon-plus icon-white"></span>
+        </button>
+        <table class="table table-striped table-hover">
+            <tbody>
+            <tr ng-repeat="user in users" ng-click="edit(user)">
+                <td>{{ user.name }}</td>
+                <td>{{ user.email }}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

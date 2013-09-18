@@ -27,14 +27,14 @@ public class Device implements Serializable {
     private String ip;
 
     @NotNull
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "MEMBER_ID", nullable = false)
-    private Member member;
-
-    @NotNull
     @Size(min = 1, max = 25)
     @Column(name = "NAME", nullable = false)
     private String name;
+
+    @NotNull
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "USER_ID", nullable = false)
+    private User user;
 
     public Long getId()
     {
@@ -56,16 +56,6 @@ public class Device implements Serializable {
         this.ip = ip;
     }
 
-    public Member getMember()
-    {
-        return member;
-    }
-
-    public void setMember(Member member)
-    {
-        this.member = member;
-    }
-
     public String getName()
     {
         return name;
@@ -74,6 +64,16 @@ public class Device implements Serializable {
     public void setName(String name)
     {
         this.name = name;
+    }
+
+    public User getUser()
+    {
+        return user;
+    }
+
+    public void setUser(User user)
+    {
+        this.user = user;
     }
 
     @Override

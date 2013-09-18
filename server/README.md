@@ -49,7 +49,7 @@ Example URL to POST http://10.10.10.10/client1/device1/energy
 
 Perhaps it's better not to include the id on the JSON object, instead in the URL.
 
-About the member, and device entities. There is a one to many relationship here, one member can have many devices. 
+About the user, and device entities. There is a one to many relationship here, one user can have many devices.
 And the device entity  may have 2 Strings, like Name and Description.
 
 

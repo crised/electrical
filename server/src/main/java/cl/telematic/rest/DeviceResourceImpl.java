@@ -17,6 +17,7 @@ import java.util.List;
 @Stateless
 public class DeviceResourceImpl implements DeviceResource {
 
+    //TODO return objects from rest domain (hide user password)
     @EJB
     private DeviceManager deviceManager;
 

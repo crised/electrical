@@ -38,11 +38,11 @@ angular.module('services.Authenticator', []).factory('Authenticator',
                     $cookieStore.remove('token');
                     $http.defaults.headers.common.Authorization = null;
                     MessageFactory.info("See you soon!");
-                },
-                setToken: function (token)
-                {
-                    setupAuthorizatoinHeader(token);
-                }
+                }//,
+//                setToken: function (token)
+//                {
+//                    setupAuthorizatoinHeader(token);
+//                }
             };
         }]);
 

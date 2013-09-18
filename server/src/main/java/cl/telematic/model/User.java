@@ -21,27 +21,25 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 
-@SuppressWarnings("serial")
 @Entity
-@XmlRootElement
-@Table(name="member", uniqueConstraints = @UniqueConstraint(columnNames = "email"))
-public class Member implements Serializable {
+@Table(name = "USERS")
+public class User implements Serializable {
 
     @NotNull
     @NotEmpty
     @Email
-    @Column(name = "EMAIL", nullable = false)
+    @Column(name = "EMAIL", nullable = false, unique = true)
     private String email;
 
     @Id
@@ -56,15 +54,20 @@ public class Member implements Serializable {
     private String name;
 
     @NotNull
+    @Column(name = "PASSWORD", length = 255, nullable = false)
+    @Size(max = 255)
+    private String password;
+
+    @NotNull
     @Size(min = 10, max = 12)
     @Digits(fraction = 0, integer = 12)
     @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
 
     @NotNull
-    @Size(min = 1, max = 25)
-    @Column(name = "USERNAME", nullable = false)
-    private String username;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "ROLE", length = 255, nullable = false)
+    private UserRole role;
 
     public String getEmail()
     {
@@ -96,21 +99,35 @@ public class Member implements Serializable {
         this.name = name;
     }
 
-    public String getPhoneNumber() {
+    public String getPassword()
+    {
+        return password;
+    }
+
+    public void setPassword(String password)
+    {
+        this.password = password;
+    }
+
+    public String getPhoneNumber()
+    {
         return phoneNumber;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
+    public void setPhoneNumber(String phoneNumber)
+    {
         this.phoneNumber = phoneNumber;
     }
 
-	public String getUsername() {
-		return username;
-	}
+    public UserRole getRole()
+    {
+        return role;
+    }
 
-	public void setUsername(String username) {
-		this.username = username;
-	}
+    public void setRole(UserRole role)
+    {
+        this.role = role;
+    }
 
     @Override
     public boolean equals(Object o)
@@ -118,11 +135,11 @@ public class Member implements Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof Member)) {
+        if (!(o instanceof User)) {
             return false;
         }
 
-        Member that = (Member) o;
+        User that = (User) o;
 
         return !(getId() != null ? !getId().equals(that.getId()) : that.getId() != null);
     }

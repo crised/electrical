@@ -19,7 +19,7 @@ public class DeviceManager {
     private DeviceDAO deviceDAO;
 
     @EJB
-    private MemberManager memberManager;
+    private UserManager userManager;
 
     @Nonnull
     public Device getDevice(@Nonnull Long deviceId)
@@ -41,6 +41,18 @@ public class DeviceManager {
         return deviceDAO.getStats(id, start, end);
     }
 
+    public List<Device> getMyDevices()
+    {
+        return deviceDAO.getDevicesByUser(userManager.getAuthenticatedUser().getId());
+    }
+
+    public void ping(@Nonnull Long id, @Nonnull String remoteAddr)
+    {
+        final Device device = deviceDAO.get(id);
+        device.setIp(remoteAddr);
+        deviceDAO.save(device);
+    }
+
     private Calendar toDayPrecision(Date start)
     {
         final Calendar calendar = Calendar.getInstance();
@@ -50,17 +62,5 @@ public class DeviceManager {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar;
-    }
-
-    public List<Device> getMyDevices()
-    {
-        return deviceDAO.getDevicesByMember(memberManager.getAuthenticatedUser().getId());
-    }
-
-    public void ping(@Nonnull Long id, @Nonnull String remoteAddr)
-    {
-        final Device device = deviceDAO.get(id);
-        device.setIp(remoteAddr);
-        deviceDAO.save(device);
     }
 }

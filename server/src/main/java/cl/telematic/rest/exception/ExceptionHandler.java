@@ -1,12 +1,14 @@
 package cl.telematic.rest.exception;
 
 import cl.telematic.business.EmailAleadyRegisteredException;
+import cl.telematic.business.InvalidCredentialsException;
 import org.jboss.resteasy.logging.Logger;
 import org.jboss.resteasy.spi.BadRequestException;
 
 import javax.ejb.EJBAccessException;
 import javax.ejb.EJBTransactionRolledbackException;
 import javax.persistence.NoResultException;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
@@ -47,6 +49,8 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
         }
         if (exception instanceof EmailAleadyRegisteredException) {
             return buildResponse(Response.Status.PRECONDITION_FAILED.getStatusCode(), "Email already registered");
+        } else if (exception instanceof InvalidCredentialsException) {
+            return buildResponse(HttpServletResponse.SC_PRECONDITION_FAILED, "Invalid credentials");
         } else if (exception instanceof BadRequestException) {
             return handleBadRequestException((BadRequestException) exception);
         } else if (exception instanceof NoResultException) {

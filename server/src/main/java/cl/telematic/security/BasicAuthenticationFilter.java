@@ -1,5 +1,6 @@
 package cl.telematic.security;
 
+import org.jboss.logging.Logger;
 import org.jboss.resteasy.util.Base64;
 
 import javax.servlet.ServletException;
@@ -12,7 +13,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
 
 @Provider
 @Authenticated
@@ -22,7 +22,7 @@ public class BasicAuthenticationFilter implements ContainerRequestFilter {
 
     private static final String AUTHORIZATION_PROPERTY = "Authorization";
 
-    private static Logger LOGGER = Logger.getLogger(BasicAuthenticationFilter.class.getCanonicalName());
+    private static Logger LOGGER = Logger.getLogger(BasicAuthenticationFilter.class);
 
     @Context
     private HttpServletRequest httpServletRequest;
@@ -53,7 +53,7 @@ public class BasicAuthenticationFilter implements ContainerRequestFilter {
         try {
             usernameAndPassword = new String(Base64.decode(encodedUserPassword));
         } catch (IOException e) {
-            LOGGER.severe("Cannot decode credentials Base64");
+            LOGGER.error("Cannot decode credentials Base64", e);
             e.printStackTrace();//TODO we probably should use better logger
             requestContext.abortWith(Response.serverError().build());
             return;
@@ -66,7 +66,7 @@ public class BasicAuthenticationFilter implements ContainerRequestFilter {
         try {
             httpServletRequest.login(username, password);
         } catch (ServletException e) {
-            LOGGER.severe("Cannot login");
+            LOGGER.error("Cannot login", e);
             e.printStackTrace();//TODO we probably should use better logger
             requestContext.abortWith(Response.serverError().build());
         }

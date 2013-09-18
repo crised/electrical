@@ -1,0 +1,35 @@
+<div class="container view-user-register">
+    <form name="form" ng-submit="register()" class="panel form-horizontal">
+        <div class="panel-heading">&nbsp;
+            <div class="panel-controls">
+                <button class="btn btn-primary" accesskey="s" ng-disabled="form.$invalid" tooltip="Save" tooltip-placement="bottom">
+                    <span class="icon-ok icon-white"></span>
+                </button>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="email">Email</label>
+
+            <div class="controls">
+                <input id="email" type="text" class="span4" ng-model="user.email" required ng-focus/>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="name">Name</label>
+
+            <div class="controls">
+                <input id="name" type="text" class="span4" ng-model="user.name" required/>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="phoneNumber">PhoneNumber</label>
+
+            <div class="controls">
+                <input id="phoneNumber" type="text" class="span4" ng-model="user.phoneNumber" ng-minlength="10" maxlength="12" required/>
+            </div>
+        </div>
+    </form>
+</div>

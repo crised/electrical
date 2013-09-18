@@ -1,4 +1,4 @@
-users.controller('UserEditCtrl', function ($scope, $location, Authenticator, MessageFactory, UserDAO)
+users.controller('UserEditCtrl', function ($scope, $location, $routeParams, Authenticator, MessageFactory, UserDAO)
 {
     var originalUser , editMode, viewReady;
     $scope.user = {id: null};
@@ -11,24 +11,36 @@ users.controller('UserEditCtrl', function ($scope, $location, Authenticator, Mes
     }
 
     clearPasswords();
-
-    UserDAO.getMe(function (user)
-    {
-        if (originalUser == null && user != null) {
-            originalUser = angular.extend({}, user);
-        }
-        $scope.user = user;
-        viewReady = true;
-    });
+    if (angular.isUndefinedOrNull($routeParams.userId)) {
+        UserDAO.getMe(function (user)
+        {
+            if (originalUser == null && user != null) {
+                originalUser = angular.extend({}, user);
+            }
+            $scope.user = user;
+            viewReady = true;
+        });
+    } else {
+        UserDAO.get($routeParams.userId, function (user)
+        {
+            if (originalUser == null && user != null) {
+                originalUser = angular.extend({}, user);
+            }
+            $scope.user = user;
+            viewReady = true;
+        });
+    }
 
     $scope.isModified = function ()
     {
-        return originalUser != null && this.user != null && (originalUser.firstName != this.user.firstName || originalUser.lastName != this.user.lastName);
+        return originalUser != null && this.user != null && (originalUser.name != this.user.name || originalUser.phoneNumber != this.user.phoneNumber);
     };
+
     $scope.isEditMode = function ()
     {
         return editMode;
     };
+
     $scope.isViewReady = function ()
     {
         return viewReady;
@@ -41,9 +53,11 @@ users.controller('UserEditCtrl', function ($scope, $location, Authenticator, Mes
 
     $scope.save = function ()
     {
-        UserDAO.persistUser(this.user, function ()
+        UserDAO.persistUser(this.user, function (user)
         {
             MessageFactory.info("User saved successfully");
+            $scope.user = user;
+            originalUser = angular.extend({}, $scope.user);
         });
     };
 
@@ -55,7 +69,6 @@ users.controller('UserEditCtrl', function ($scope, $location, Authenticator, Mes
         }
         UserDAO.changePassword($scope.password.current, $scope.password.new, function (token)
         {
-            Authenticator.setToken(token);
             MessageFactory.info("Password changed successfully");
         }, function (response, status)
         {
