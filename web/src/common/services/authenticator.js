@@ -1,20 +1,20 @@
 angular.module('services.Authenticator', []).factory('Authenticator',
         ['Base64', '$cookieStore', '$http', 'MessageFactory', function (Base64, $cookieStore, $http, MessageFactory)
         {
-            function setupAuthorizatoinHeader(data)
-            {
-                $http.defaults.headers.common.Authorization = 'Token ' + Base64.encode(data);
-            }
+//            function setupAuthorizatoinHeader(data)
+//            {
+//                $http.defaults.headers.common.Authorization = 'Token ' + Base64.encode(data);
+//            }
 
             // initialize to whatever is in the cookie, if anything
             /**
              * TODO  We need to set cookie different cookie path than Angular does by default.
              * Once angular pulls in https://github.com/angular/angular.js/pull/2459 we can switch back to $cookieStore instead of jQuery plugin
              */
-            var cookieAuthdata = $.cookie('token');
-            if (cookieAuthdata) {
-                setupAuthorizatoinHeader(cookieAuthdata);
-            }
+//            var cookieAuthdata = $.cookie('token');
+//            if (cookieAuthdata) {
+//                setupAuthorizatoinHeader(cookieAuthdata);
+//            }
 
 
             return {
@@ -22,10 +22,10 @@ angular.module('services.Authenticator', []).factory('Authenticator',
                 {
                     var encodedCredentials = Base64.encode(email + ':' + password);
                     $http.defaults.headers.common.Authorization = 'Basic ' + encodedCredentials;
-                    $http.post(doubleEscapedContextPath + "/api/auth/token", null, {withCredentials: true}).success(function (data)
+                    $http.post(doubleEscapedContextPath + "/rest/auth", null, {withCredentials: true}).success(function (data)
                     {
-                        $.cookie('token', data, {path: clientContextPath});
-                        setupAuthorizatoinHeader(data);
+//                        $.cookie('token', data, {path: clientContextPath});
+//                        setupAuthorizatoinHeader(data);
                         MessageFactory.info("Welcome to Electrical!");
                         if (callback instanceof Function) {
                             callback();
