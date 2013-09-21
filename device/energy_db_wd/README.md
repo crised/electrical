@@ -8,11 +8,13 @@ gcc -lpq -lmodbus -o "energy_db_wd" ./src/energy_db_wd.c
 
 You need to have the libmodbus-devel and postgresql-devel packages installed.
 
-Database has one table as:
+Database name is energyMeterDB
+
+energyMeterDB has one table as:
 
 CREATE TABLE energyreadings
 (
-  datetime varchar(40),
+  datetime timestamp DEFAULT now(),
   sent boolean,
   v1_voltage integer,
   v2_voltage integer,
@@ -28,4 +30,3 @@ CREATE TABLE energyreadings
   kwh_import_l3 bigint
 );
 
-database name is energyMeterDB

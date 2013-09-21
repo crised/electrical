@@ -13,7 +13,6 @@
 
 typedef struct ENERGY_RECORD
 {
-  char     datetime[40];
   uint8_t  sent;
   int32_t  v1_voltage;
   int32_t  v2_voltage;

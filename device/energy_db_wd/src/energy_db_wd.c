@@ -13,12 +13,12 @@
 #include <libpq-fe.h>
 #include <modbus/modbus-rtu.h>
 #include <errno.h>
-#include <time.h>
+
 
 static void exit_nicely(PGconn *conn)
 {
-    PQfinish(conn);
-    exit(1);
+  PQfinish(conn);
+  exit(1);
 }
 
 int read_unsigned_32b(modbus_t* ctx, int addr, uint32_t* value)
@@ -33,6 +33,7 @@ int read_unsigned_32b(modbus_t* ctx, int addr, uint32_t* value)
   else
   {
     *value = hi * 65536 + lo;
+    printf("modbus read from %d: %u,%u = %u", addr, lo, hi, *value);
     return 1;
   }
 }
@@ -49,6 +50,7 @@ int read_signed_32b(modbus_t* ctx, int addr, int32_t* value)
   else
   {
     *value = ((int16_t)hi) * 65536 + lo;
+    printf("modbus read from %d: %u,%u = %d", addr, lo, hi, *value);
     return 1;
   }
 }
@@ -61,8 +63,8 @@ int read_from_Modbus(ENERGY_RECORD* record, const char* port)
   ctx = modbus_new_rtu(port, 9600, 'N', 8,1);
   modbus_set_slave(ctx, 1);
   if (ctx == NULL) {
-      fprintf(stderr, "Unable to create the libmodbus context\n");
-      return 0;
+    fprintf(stderr, "Unable to create the libmodbus context\n");
+    return 0;
   }
 
   modbus_result = modbus_connect(ctx);
@@ -112,26 +114,27 @@ int write_to_DB(ENERGY_RECORD* record, PGconn* connection)
 
   snprintf(command, sizeof(command),
       "INSERT INTO public.energyreadings VALUES ("
-      "\'%s\', \'%s\', "
+      "DEFAULT, \'%s\', "
       "\'%d\', \'%d\', \'%d\', \'%d\', \'%d\', "
       "\'%u\', \'%u\', \'%u\', \'%u\', \'%u\', \'%u\', \'%u\'"
       ")",
 
-      record->datetime,
       record->sent? "true" : "false",
-      record->v1_voltage,
-      record->v2_voltage,
-      record->v3_voltage,
-      record->total_kw,
-      record->total_pf,
-      record->kw_import_block_demand,
-      record->kvar_import_block_demand,
-      record->kva_block_demand,
-      record->kwh_import,
-      record->kwh_import_l1,
-      record->kwh_import_l2,
-      record->kwh_import_l3
+          record->v1_voltage,
+          record->v2_voltage,
+          record->v3_voltage,
+          record->total_kw,
+          record->total_pf,
+          record->kw_import_block_demand,
+          record->kvar_import_block_demand,
+          record->kva_block_demand,
+          record->kwh_import,
+          record->kwh_import_l1,
+          record->kwh_import_l2,
+          record->kwh_import_l3
   );
+
+  printf("%s\n", command);
 
   if (PQgetResult(connection) != NULL)
   {
@@ -143,7 +146,7 @@ int write_to_DB(ENERGY_RECORD* record, PGconn* connection)
     query_result = PQsendQuery(connection, command);
     if (query_result != 1)
     {
-        fprintf(stderr, "Insert failed: %s", PQerrorMessage(connection));
+      fprintf(stderr, "Insert failed: %s", PQerrorMessage(connection));
     }
     else if (PQresultStatus(PQgetResult(connection)) != PGRES_COMMAND_OK)
     {
@@ -165,18 +168,15 @@ int main(int argc, char** argv)
   psql_connection = PQconnectdb(psql_conninfo);
   if (PQstatus(psql_connection) != CONNECTION_OK)
   {
-      fprintf(stderr, "Connection to database failed: %s",
-              PQerrorMessage(psql_connection));
-      exit_nicely(psql_connection);
+    fprintf(stderr, "Connection to database failed: %s",
+        PQerrorMessage(psql_connection));
+    exit_nicely(psql_connection);
   }
 
 
   while (1)
   {
-    ENERGY_RECORD rec;
-    time_t t = time(NULL);
-    snprintf(rec.datetime, sizeof(rec.datetime), "%s", asctime(gmtime(&t)));
-    rec.sent = 0;
+    ENERGY_RECORD rec = {0};
 
     if (!read_from_Modbus(&rec, "/dev/ttyUSB0"))
     {
