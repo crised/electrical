@@ -3,6 +3,8 @@ First roll for the modbus->DB daemon.
 Build:
 
 gcc $(pkg-config --cflags --libs libmodbus libpq) -o "energy_db_wd" ./src/energy_db_wd.c
+or if pkg-config fails
+gcc -lpq -lmodbus -o "energy_db_wd" ./src/energy_db_wd.c
 
 You need to have the libmodbus-devel and postgresql-devel packages installed.
 
