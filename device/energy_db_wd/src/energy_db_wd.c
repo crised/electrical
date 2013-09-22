@@ -55,7 +55,7 @@ int read_signed_32b(modbus_t* ctx, int addr, int32_t* value)
   }
 }
 
-int read_from_Modbus(ENERGY_RECORD* record, const char* port)
+int read_from_Modbus(void* rec, const char* port, int type)
 {
   int modbus_result = 1;
   modbus_t *ctx;
@@ -81,22 +81,37 @@ int read_from_Modbus(ENERGY_RECORD* record, const char* port)
     response_timeout.tv_usec = 0;
     modbus_set_response_timeout(ctx, &response_timeout);
 
-    modbus_result &= read_signed_32b(ctx, 13952,        &record->v1_voltage);
-    modbus_result &= read_signed_32b(ctx, 13952 + 2,    &record->v2_voltage);
-    modbus_result &= read_signed_32b(ctx, 13952 + 4,    &record->v3_voltage);
-
-    modbus_result &= read_signed_32b(ctx, 14336,        &record->total_kw);
-    modbus_result &= read_signed_32b(ctx, 14336 + 2,    &record->total_pf);
-
-    modbus_result &= read_unsigned_32b(ctx, 14592 + 12, &record->kw_import_block_demand);
-    modbus_result &= read_unsigned_32b(ctx, 14592 + 14, &record->kvar_import_block_demand);
-    modbus_result &= read_unsigned_32b(ctx, 14592 + 16, &record->kva_block_demand);
-
-    modbus_result &= read_unsigned_32b(ctx, 14720,      &record->kwh_import);
-
-    modbus_result &= read_unsigned_32b(ctx, 14848,      &record->kwh_import_l1);
-    modbus_result &= read_unsigned_32b(ctx, 14848 + 2,  &record->kwh_import_l2);
-    modbus_result &= read_unsigned_32b(ctx, 14848 + 4,  &record->kwh_import_l3);
+    switch (type)
+    {
+      case E_INSTANT_VALUES_RECORD:
+      {
+        INSTANT_VALUES_RECORD* record = (INSTANT_VALUES_RECORD*)rec;
+        modbus_result &= read_signed_32b(ctx, 13952,        &record->v1_voltage);
+        modbus_result &= read_signed_32b(ctx, 13952 + 2,    &record->v2_voltage);
+        modbus_result &= read_signed_32b(ctx, 13952 + 4,    &record->v3_voltage);
+        modbus_result &= read_signed_32b(ctx, 14336,        &record->total_kw);
+        modbus_result &= read_signed_32b(ctx, 14336 + 2,    &record->total_pf);
+      } break;
+      case E_DEMAND_VALUES_RECORD:
+      {
+        DEMAND_VALUES_RECORD* record = (DEMAND_VALUES_RECORD*)rec;
+        modbus_result &= read_unsigned_32b(ctx, 14592 + 12, &record->kw_import_block_demand);
+        modbus_result &= read_unsigned_32b(ctx, 14592 + 14, &record->kvar_import_block_demand);
+        modbus_result &= read_unsigned_32b(ctx, 14592 + 16, &record->kva_block_demand);
+      } break;
+      case E_ENERGY_VALUES_RECORD:
+      {
+        ENERGY_VALUES_RECORD* record = (ENERGY_VALUES_RECORD*)rec;
+        modbus_result &= read_unsigned_32b(ctx, 14720,      &record->kwh_import);
+        modbus_result &= read_unsigned_32b(ctx, 14848,      &record->kwh_import_l1);
+        modbus_result &= read_unsigned_32b(ctx, 14848 + 2,  &record->kwh_import_l2);
+        modbus_result &= read_unsigned_32b(ctx, 14848 + 4,  &record->kwh_import_l3);
+      } break;
+      default:
+        printf("Invalid reading type\n");
+        modbus_result = 0;
+      break;
+    }
   }
 
   if (!modbus_result)
@@ -112,32 +127,62 @@ int read_from_Modbus(ENERGY_RECORD* record, const char* port)
   return modbus_result;
 }
 
-int write_to_DB(ENERGY_RECORD* record, PGconn* connection)
+int write_to_DB(void* rec, PGconn* connection, int type)
 {
   int query_result = 1;
   char command[1024];
 
-  snprintf(command, sizeof(command),
-      "INSERT INTO public.energyreadings VALUES ("
-      "DEFAULT, \'%s\', "
-      "\'%d\', \'%d\', \'%d\', \'%d\', \'%d\', "
-      "\'%u\', \'%u\', \'%u\', \'%u\', \'%u\', \'%u\', \'%u\'"
-      ")",
+  switch (type)
+  {
+    case E_INSTANT_VALUES_RECORD:
+    {
+      INSTANT_VALUES_RECORD* record = (INSTANT_VALUES_RECORD*)rec;
+      snprintf(command, sizeof(command),
+          "INSERT INTO public.instant_values_readings VALUES ("
+          "DEFAULT, DEFAULT, "
+          "\'%d\', \'%d\', \'%d\', \'%d\', \'%d\'"
+          ")",
+              record->v1_voltage,
+              record->v2_voltage,
+              record->v3_voltage,
+              record->total_kw,
+              record->total_pf
+      );
+    } break;
+    case E_DEMAND_VALUES_RECORD:
+    {
+      DEMAND_VALUES_RECORD* record = (DEMAND_VALUES_RECORD*)rec;
+      snprintf(command, sizeof(command),
+          "INSERT INTO public.demand_values_readings VALUES ("
+          "DEFAULT, DEFAULT, "
+          "\'%u\', \'%u\', \'%u\'"
+          ")",
+              record->kw_import_block_demand,
+              record->kvar_import_block_demand,
+              record->kva_block_demand
+      );
+    } break;
+    case E_ENERGY_VALUES_RECORD:
+    {
+      ENERGY_VALUES_RECORD* record = (ENERGY_VALUES_RECORD*)rec;
+      snprintf(command, sizeof(command),
+          "INSERT INTO public.energy_values_readings VALUES ("
+          "DEFAULT, DEFAULT, "
+          "\'%u\', \'%u\', \'%u\', \'%u\'"
+          ")",
+              record->kwh_import,
+              record->kwh_import_l1,
+              record->kwh_import_l2,
+              record->kwh_import_l3
+      );
+    } break;
+    default:
+      printf("Invalid reading type\n");
+      query_result = 0;
+    break;
+  }
 
-      record->sent? "true" : "false",
-          record->v1_voltage,
-          record->v2_voltage,
-          record->v3_voltage,
-          record->total_kw,
-          record->total_pf,
-          record->kw_import_block_demand,
-          record->kvar_import_block_demand,
-          record->kva_block_demand,
-          record->kwh_import,
-          record->kwh_import_l1,
-          record->kwh_import_l2,
-          record->kwh_import_l3
-  );
+
 
   printf("%s\n", command);
 
@@ -169,6 +214,13 @@ int main(int argc, char** argv)
 
   const char* psql_conninfo = "dbname = energyMeterDB";
   PGconn*     psql_connection;
+  unsigned long long counter = 0;
+
+  if (argc < 2)
+  {
+    fprintf(stderr, "usage: %s serial_port\n", argv[0]);
+    exit(1);
+  }
 
   psql_connection = PQconnectdb(psql_conninfo);
   if (PQstatus(psql_connection) != CONNECTION_OK)
@@ -181,19 +233,52 @@ int main(int argc, char** argv)
 
   while (1)
   {
-    ENERGY_RECORD rec = {0};
 
-    if (!read_from_Modbus(&rec, "/dev/ttyUSB0"))
+    if (counter % INSTANT_VALUES_INTERVAL == 0)
     {
-      fprintf(stderr, "read_from_Modbus failed\n");
-      break;
+      INSTANT_VALUES_RECORD record;
+      if (!read_from_Modbus(&record, argv[1], E_INSTANT_VALUES_RECORD))
+      {
+        fprintf(stderr, "read_from_Modbus failed\n");
+        break;
+      }
+      if (!write_to_DB(&record, psql_connection, E_INSTANT_VALUES_RECORD))
+      {
+        fprintf(stderr, "write_to_DB failed\n");
+        break;
+      }
     }
-    if (!write_to_DB(&rec, psql_connection))
+    if (counter % DEMAND_VALUES_INTERVAL == 0)
     {
-      fprintf(stderr, "write_to_DB failed\n");
-      break;
+      DEMAND_VALUES_RECORD record;
+      if (!read_from_Modbus(&record, argv[1], E_DEMAND_VALUES_RECORD))
+      {
+        fprintf(stderr, "read_from_Modbus failed\n");
+        break;
+      }
+      if (!write_to_DB(&record, psql_connection, E_DEMAND_VALUES_RECORD))
+      {
+        fprintf(stderr, "write_to_DB failed\n");
+        break;
+      }
     }
-    sleep(3);
+    if (counter % ENERGY_VALUES_INTERVAL == 0)
+    {
+      ENERGY_VALUES_RECORD record;
+      if (!read_from_Modbus(&record, argv[1], E_ENERGY_VALUES_RECORD))
+      {
+        fprintf(stderr, "read_from_Modbus failed\n");
+        break;
+      }
+      if (!write_to_DB(&record, psql_connection, E_ENERGY_VALUES_RECORD))
+      {
+        fprintf(stderr, "write_to_DB failed\n");
+        break;
+      }
+    }
+
+    sleep(1);
+    counter++;
   }
 
   PQfinish(psql_connection);
