@@ -3,7 +3,7 @@ First roll for the modbus->DB daemon.
 
 Prerequisites:
 
-You need to have the libmodbus-devel and postgresql-devel packages installed.
+install developement tools: sudo yum install gcc gcc-c++ gdb autoconf libtool postgresql-devel
 
 Build libmodbus as static library:
 Download sources from https://github.com/downloads/stephane/libmodbus/libmodbus-3.0.3.tar.gz

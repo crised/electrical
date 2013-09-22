@@ -27,13 +27,13 @@ int read_unsigned_32b(modbus_t* ctx, int addr, uint32_t* value)
   if (   modbus_read_registers(ctx, addr, 1, &lo) != 1
       || modbus_read_registers(ctx, addr+1, 1, &hi) != 1)
   {
-    fprintf(stderr, "modbus_read_registers failed: %d", errno);
+    fprintf(stderr, "modbus_read_registers failed: %d\n", errno);
     return 0;
   }
   else
   {
     *value = hi * 65536 + lo;
-    printf("modbus read from %d: %u,%u = %u", addr, lo, hi, *value);
+    printf("modbus read from %d: %u,%u = %u\n", addr, lo, hi, *value);
     return 1;
   }
 }
@@ -44,13 +44,13 @@ int read_signed_32b(modbus_t* ctx, int addr, int32_t* value)
   if (   modbus_read_registers(ctx, addr, 1, &lo) != 1
       || modbus_read_registers(ctx, addr+1, 1, &hi) != 1)
   {
-    fprintf(stderr, "modbus_read_registers failed: %d", errno);
+    fprintf(stderr, "modbus_read_registers failed: %d\n", errno);
     return 0;
   }
   else
   {
     *value = ((int16_t)hi) * 65536 + lo;
-    printf("modbus read from %d: %u,%u = %d", addr, lo, hi, *value);
+    printf("modbus read from %d: %u,%u = %d\n", addr, lo, hi, *value);
     return 1;
   }
 }
@@ -96,7 +96,7 @@ int read_from_Modbus(ENERGY_RECORD* record, const char* port)
 
   if (!modbus_result)
   {
-    fprintf(stderr, "Modbus read failed");
+    fprintf(stderr, "Modbus read failed\n");
   }
 
 
@@ -138,7 +138,7 @@ int write_to_DB(ENERGY_RECORD* record, PGconn* connection)
 
   if (PQgetResult(connection) != NULL)
   {
-    fprintf(stderr, "Previous query failed: %s", PQerrorMessage(connection));
+    fprintf(stderr, "Previous query failed: %s\n", PQerrorMessage(connection));
     query_result = 0;
   }
   else
@@ -146,11 +146,11 @@ int write_to_DB(ENERGY_RECORD* record, PGconn* connection)
     query_result = PQsendQuery(connection, command);
     if (query_result != 1)
     {
-      fprintf(stderr, "Insert failed: %s", PQerrorMessage(connection));
+      fprintf(stderr, "Insert failed: %s\n", PQerrorMessage(connection));
     }
     else if (PQresultStatus(PQgetResult(connection)) != PGRES_COMMAND_OK)
     {
-      fprintf(stderr, "Query failed: %s", PQerrorMessage(connection));
+      fprintf(stderr, "Query failed: %s\n", PQerrorMessage(connection));
       query_result = 0;
     }
 
@@ -168,7 +168,7 @@ int main(int argc, char** argv)
   psql_connection = PQconnectdb(psql_conninfo);
   if (PQstatus(psql_connection) != CONNECTION_OK)
   {
-    fprintf(stderr, "Connection to database failed: %s",
+    fprintf(stderr, "Connection to database failed: %s\n",
         PQerrorMessage(psql_connection));
     exit_nicely(psql_connection);
   }
@@ -180,12 +180,12 @@ int main(int argc, char** argv)
 
     if (!read_from_Modbus(&rec, "/dev/ttyUSB0"))
     {
-      fprintf(stderr, "read_from_Modbus failed");
+      fprintf(stderr, "read_from_Modbus failed\n");
       break;
     }
     if (!write_to_DB(&rec, psql_connection))
     {
-      fprintf(stderr, "write_to_DB failed");
+      fprintf(stderr, "write_to_DB failed\n");
       break;
     }
     sleep(3);
