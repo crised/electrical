@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <libpq-fe.h>
-#include <modbus/modbus-rtu.h>
+#include <modbus-rtu.h>
 #include <errno.h>
 
 
@@ -178,7 +178,7 @@ int main(int argc, char** argv)
   {
     ENERGY_RECORD rec = {0};
 
-    if (!read_from_Modbus(&rec, "/dev/ttyUSB0"))
+    if (!read_from_Modbus(&rec, "/dev/ttyS0"))
     {
       fprintf(stderr, "read_from_Modbus failed\n");
       break;
