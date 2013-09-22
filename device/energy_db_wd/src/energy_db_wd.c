@@ -27,7 +27,7 @@ int read_unsigned_32b(modbus_t* ctx, int addr, uint32_t* value)
   if (   modbus_read_registers(ctx, addr, 1, &lo) != 1
       || modbus_read_registers(ctx, addr+1, 1, &hi) != 1)
   {
-    fprintf(stderr, "modbus_read_registers failed: %d\n", errno);
+    fprintf(stderr, "modbus_read_registers failed: %s\n", modbus_strerror(errno));
     return 0;
   }
   else
@@ -44,7 +44,7 @@ int read_signed_32b(modbus_t* ctx, int addr, int32_t* value)
   if (   modbus_read_registers(ctx, addr, 1, &lo) != 1
       || modbus_read_registers(ctx, addr+1, 1, &hi) != 1)
   {
-    fprintf(stderr, "modbus_read_registers failed: %d\n", errno);
+    fprintf(stderr, "modbus_read_registers failed: %s\n", modbus_strerror(errno));
     return 0;
   }
   else
@@ -67,8 +67,8 @@ int read_from_Modbus(ENERGY_RECORD* record, const char* port)
     return 0;
   }
 
-  modbus_result = modbus_connect(ctx);
-  if (modbus_result)
+  modbus_result = (modbus_connect(ctx) == 0);
+  if (!modbus_result)
   {
     printf("modbus_connect failed\n");
     modbus_result = 0;
@@ -178,7 +178,7 @@ int main(int argc, char** argv)
   {
     ENERGY_RECORD rec = {0};
 
-    if (!read_from_Modbus(&rec, "/dev/ttyS0"))
+    if (!read_from_Modbus(&rec, "/dev/ttyUSB0"))
     {
       fprintf(stderr, "read_from_Modbus failed\n");
       break;
