@@ -20,9 +20,19 @@ or if pkg-config fails
 gcc -lpq -lmodbus -o "energy_db_wd" ./src/energy_db_wd.c
 
 
-Database name is energyMeterDB
+Quick start for the database:
 
-energyMeterDB has one table as:
+1. create a postgresql user - easier if you choose same username ar current linux username:
+sudo su - postgres
+createuser
+input all prompted data then exit
+
+
+2.create the database and the table:
+createdb energyMeterDB
+psql energyMeterDB
+
+copy and paste the below command:
 
 CREATE TABLE energyreadings
 (
