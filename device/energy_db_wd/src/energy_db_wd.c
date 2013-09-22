@@ -76,6 +76,11 @@ int read_from_Modbus(ENERGY_RECORD* record, const char* port)
 
   if (modbus_result)
   {
+    struct timeval response_timeout;
+    response_timeout.tv_sec = 5;
+    response_timeout.tv_usec = 0;
+    modbus_set_response_timeout(ctx, &response_timeout);
+
     modbus_result &= read_signed_32b(ctx, 13952,        &record->v1_voltage);
     modbus_result &= read_signed_32b(ctx, 13952 + 2,    &record->v2_voltage);
     modbus_result &= read_signed_32b(ctx, 13952 + 4,    &record->v3_voltage);
