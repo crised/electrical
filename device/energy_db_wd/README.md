@@ -32,7 +32,17 @@ input all prompted data then exit
 createdb energyMeterDB
 psql energyMeterDB
 
-copy and paste the below command:
+3 tables:
+
+* Instant values: V1,V2,V3,Total KW, Total PF.
+* Demand Values (15 minutes measured):  kw_import_block_demand bigint,
+  kvar_import_block_demand bigint,
+  kva_block_demand bigint.
+* Energy Values:  kwh_import bigint,
+  kwh_import_l1 bigint,
+  kwh_import_l2 bigint,
+  kwh_import_l3 bigint'
+
 
 CREATE TABLE energyreadings
 (
