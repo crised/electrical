@@ -1,47 +1,60 @@
-/*
- ============================================================================
- Name        : hello.c
- Author      : 
- Version     :
- Copyright   : Your copyright notice
- Description : Hello World in C, Ansi-style
- ============================================================================
- */
-
+//Working - BulletProof
+#include <modbus-rtu.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <modbus/modbus-rtu.h>
 #include <errno.h>
 
-//256 V1 16 bit voltage
+int main()
+{
+modbus_t *ctx;
+uint16_t tab_reg[64];
+int rc;
+int i;
 
-int main(void) {
+ctx = modbus_new_rtu("/dev/ttyUSB0", 9600, 'N', 8,1);
+if (modbus_connect(ctx) == -1) {
+fprintf(stderr, "Connection failed: %s\n", modbus_strerror(errno));
+modbus_free(ctx);
+return -1;
+}
 
-	modbus_t *ctx;
-	uint16_t tab_reg[64];
-	int rc, i;
+rc = modbus_set_slave(ctx, 1);
+if (rc == -1) {
+fprintf(stderr, "%s\n", modbus_strerror(errno));
+return -1;
+}
 
-	ctx = modbus_new_rtu("/dev/ttyUSB0", 9600, 'N', 8,1);
-	modbus_set_slave(ctx, 1);
-	if (ctx == NULL) {
-	    fprintf(stderr, "Unable to create the libmodbus context\n");
-	    return -1;
-	}
+struct timeval response_timeout;
+response_timeout.tv_sec = 5;
+response_timeout.tv_usec = 0;
 
-	int connect = modbus_connect(ctx);
+modbus_set_response_timeout(ctx, &response_timeout);
 
-	rc = modbus_read_registers(ctx, 256, 1000, tab_reg);
+while(1){
+
+	modbus_connect(ctx);
+	rc = modbus_read_registers(ctx, 13952, 1, &tab_reg[0]);
 	if (rc == -1) {
-		printf("Read_Register: %s\n", "Error");
-	    return -1;
+	fprintf(stderr, "%s\n", modbus_strerror(errno));
+	return -1;
+	}
+	usleep(17000); //max transaction timing.
+
+	rc = modbus_read_registers(ctx, 13954, 1, &tab_reg[1]);
+	if (rc == -1) {
+	fprintf(stderr, "%s\n", modbus_strerror(errno));
+	return -1;
 	}
 
-
-	modbus_flush(ctx);
+	for (i=0; i < 2; i++) {
+	printf("reg[%d]=%d (0x%X)\n", i, tab_reg[i], tab_reg[i]);
+	}
+	//modbus_flush(ctx);
+	//modbus_close(ctx);
+	usleep(10000);
 	modbus_close(ctx);
-	modbus_free(ctx);
 
+}
 
-	return EXIT_SUCCESS;
-
+modbus_free(ctx);
+return 0;
 }
