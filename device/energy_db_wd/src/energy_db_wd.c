@@ -24,8 +24,13 @@ static void exit_nicely(PGconn *conn)
 int read_unsigned_32b(modbus_t* ctx, int addr, uint32_t* value)
 {
   uint16_t lo, hi;
-  if (   modbus_read_registers(ctx, addr, 1, &lo) != 1
-      || modbus_read_registers(ctx, addr+1, 1, &hi) != 1)
+  int rcl, rch;
+  rcl = modbus_read_registers(ctx, addr, 1, &lo);
+  usleep(17000); //max transaction timing.
+  rch = modbus_read_registers(ctx, addr+1, 1, &hi);
+  usleep(17000); //max transaction timing.
+
+  if ( rcl != 1 || rch != 1)
   {
     fprintf(stderr, "modbus_read_registers failed: %s\n", modbus_strerror(errno));
     return 0;
@@ -41,8 +46,13 @@ int read_unsigned_32b(modbus_t* ctx, int addr, uint32_t* value)
 int read_signed_32b(modbus_t* ctx, int addr, int32_t* value)
 {
   uint16_t lo, hi;
-  if (   modbus_read_registers(ctx, addr, 1, &lo) != 1
-      || modbus_read_registers(ctx, addr+1, 1, &hi) != 1)
+  int rcl, rch;
+  rcl = modbus_read_registers(ctx, addr, 1, &lo);
+  usleep(17000); //max transaction timing.
+  rch = modbus_read_registers(ctx, addr+1, 1, &hi);
+  usleep(17000); //max transaction timing.
+
+  if ( rcl != 1 || rch != 1)
   {
     fprintf(stderr, "modbus_read_registers failed: %s\n", modbus_strerror(errno));
     return 0;
