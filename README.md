@@ -1,6 +1,8 @@
 electrical
 ==========
 
+Intel NUC working as expected, CentOS 6.4 x86_64
+
 Electrical M2M software to get an Electrical Bill approximation
 
 EJB, CDI, Entities, JAX-RS, Arquillian. 
