@@ -44,15 +44,23 @@ psql energyMeterDB
   kwh_import_l3 bigint'
 
 
+-------------copy from here-----------
+
+
+DROP TABLE instant_values_readings;
+DROP TABLE demand_values_readings;
+DROP TABLE energy_values_readings;
+
 CREATE TABLE instant_values_readings
 (
   datetime timestamp DEFAULT now(),
   sent boolean DEFAULT 'false',
-  v1_voltage integer,
-  v2_voltage integer,
-  v3_voltage integer,
+  v1_voltage bigint,
+  v2_voltage bigint,
+  v3_voltage bigint,
   total_kw integer,
-  total_pf integer
+  total_pf integer,
+  PRIMARY KEY(datetime)
 );
 
 CREATE TABLE demand_values_readings
@@ -61,7 +69,8 @@ CREATE TABLE demand_values_readings
   sent boolean DEFAULT 'false',
   kw_import_block_demand bigint,
   kvar_import_block_demand bigint,
-  kva_block_demand bigint
+  kva_block_demand bigint,
+  PRIMARY KEY(datetime)
 );
 
 CREATE TABLE energy_values_readings
@@ -71,6 +80,15 @@ CREATE TABLE energy_values_readings
   kwh_import bigint,
   kwh_import_l1 bigint,
   kwh_import_l2 bigint,
-  kwh_import_l3 bigint
+  kwh_import_l3 bigint,
+  PRIMARY KEY(datetime)
 );
+
+-------------copy to here-----------
+
+
+
+Installing the service:
+1. create PostgreSQL user 'root'
+2. copy energy_db_wd.conf to /etc/init
 

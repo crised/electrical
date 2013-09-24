@@ -10,38 +10,84 @@
 
 #include <stdint.h>
 
-#define E_INSTANT_VALUES_RECORD (1)
-#define E_DEMAND_VALUES_RECORD  (1<<1)
-#define E_ENERGY_VALUES_RECORD  (1<<2)
+enum E_VALUES_RECORD
+{
+  E_INSTANT_VALUES_RECORD = 0,
+  E_DEMAND_VALUES_RECORD,
+  E_ENERGY_VALUES_RECORD,
+  E_VALUES_RECORD_COUNT
+};
 
 #define INSTANT_VALUES_INTERVAL (1)
 #define DEMAND_VALUES_INTERVAL  (15)
 #define ENERGY_VALUES_INTERVAL  (5)
 
-typedef struct INSTANT_VALUES_RECORD
-{
-  int32_t  v1_voltage;
-  int32_t  v2_voltage;
-  int32_t  v3_voltage;
-  int32_t  total_kw;
-  int32_t  total_pf;
-}INSTANT_VALUES_RECORD;
+#define MAX_MODBUS_TR_TIMING    (17000)
+#define MAX_MODBUS_RETRIES      (5)
+#define MAX_MODBUS_READ_SIZE    (10)
+#define INCREASE_MODBUS_TIMEOUT (0)
 
-typedef struct DEMAND_VALUES_RECORD
+typedef struct METER_REGISTER
 {
-  uint32_t kw_import_block_demand;
-  uint32_t kvar_import_block_demand;
-  uint32_t kva_block_demand;
-}DEMAND_VALUES_RECORD;
+  char*   name;
+  int     address;
+  int     is_signed;
+}METER_REGISTER;
 
-typedef struct ENERGY_VALUES_RECORD
-{
-  uint32_t kwh_import;
-  uint32_t kwh_import_l1;
-  uint32_t kwh_import_l2;
-  uint32_t kwh_import_l3;
-}ENERGY_VALUES_RECORD;
 
+#define INSTANT_VALUES_METER_REGISTERS \
+{\
+{"v1_voltage",    13952,        0}, \
+{"v2_voltage",    13952 + 2,    0}, \
+{"total_kw",      14336 ,       1}, \
+{"total_pf",      14336 + 2 ,   1}, \
+{0, 0, 0}, \
+}
+
+#define DEMAND_VALUES_METER_REGISTERS \
+{\
+{"kw_import_block_demand",      14592 + 12,        0}, \
+{"kvar_import_block_demand",    14592 + 14,        0}, \
+{"kva_block_demand",            14592 + 16,        0}, \
+{0, 0, 0}, \
+}
+
+#define ENERGY_VALUES_METER_REGISTERS \
+{\
+{"kwh_import",      14720,        0}, \
+{"kwh_import_l1",   14848,        0}, \
+{"kwh_import_l2",   14848 + 2,    0}, \
+{"kwh_import_l3",   14848 + 4,    0}, \
+{0, 0, 0}, \
+}
+
+#define METER_REGISTER_MAX_SIZE (5)
+typedef METER_REGISTER METER_REGISTER_ARRAY[METER_REGISTER_MAX_SIZE];
+
+#define METER_REGISTER_ARRAY_INITIALIZER \
+{\
+    INSTANT_VALUES_METER_REGISTERS, \
+    DEMAND_VALUES_METER_REGISTERS,  \
+    ENERGY_VALUES_METER_REGISTERS   \
+}
+
+
+#define TABLE_NAME_ARRAY_INITIALIZER \
+{\
+    "public.instant_values_readings", \
+    "public.demand_values_readings", \
+    "public.energy_values_readings"  \
+}
+
+#define SQL_QUERY_STRING_MAX_SIZE (1024)
+
+
+
+#ifdef DEBUG
+  #define SYSLOG(...)      fprintf(stderr, __VA_ARGS__);
+#else
+  #define SYSLOG(...)       syslog(LOG_CRIT, __VA_ARGS__)
+#endif
 
 
 #endif /* ENERGY_DB_WD_H_ */

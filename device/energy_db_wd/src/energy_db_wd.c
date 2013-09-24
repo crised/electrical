@@ -13,192 +13,103 @@
 #include <libpq-fe.h>
 #include <modbus-rtu.h>
 #include <errno.h>
+#include <string.h>
+#include <signal.h>
+#include <syslog.h>
+
+
+METER_REGISTER mt[] = INSTANT_VALUES_METER_REGISTERS;
 
 
 static void exit_nicely(PGconn *conn)
 {
   PQfinish(conn);
-  exit(1);
+  exit(EXIT_FAILURE);
 }
 
-int read_unsigned_32b(modbus_t* ctx, int addr, uint32_t* value)
+int read_modbus_32b(modbus_t* ctx, int addr, uint32_t* value, int is_signed)
 {
-  uint16_t lo, hi;
-  int rcl, rch;
-  rcl = modbus_read_registers(ctx, addr, 1, &lo);
-  usleep(17000); //max transaction timing.
-  rch = modbus_read_registers(ctx, addr+1, 1, &hi);
-  usleep(17000); //max transaction timing.
-
-  if ( rcl != 1 || rch != 1)
+  uint16_t reg[2];
+  int rc;
+  int retries = MAX_MODBUS_RETRIES;
+  while (--retries)
   {
-    fprintf(stderr, "modbus_read_registers failed: %s\n", modbus_strerror(errno));
-    return 0;
-  }
-  else
-  {
-    *value = hi * 65536 + lo;
-    printf("modbus read from %d: %u,%u = %u\n", addr, lo, hi, *value);
-    return 1;
-  }
-}
-
-int read_signed_32b(modbus_t* ctx, int addr, int32_t* value)
-{
-  uint16_t lo, hi;
-  int rcl, rch;
-  rcl = modbus_read_registers(ctx, addr, 1, &lo);
-  usleep(17000); //max transaction timing.
-  rch = modbus_read_registers(ctx, addr+1, 1, &hi);
-  usleep(17000); //max transaction timing.
-
-  if ( rcl != 1 || rch != 1)
-  {
-    fprintf(stderr, "modbus_read_registers failed: %s\n", modbus_strerror(errno));
-    return 0;
-  }
-  else
-  {
-    *value = ((int16_t)hi) * 65536 + lo;
-    printf("modbus read from %d: %u,%u = %d\n", addr, lo, hi, *value);
-    return 1;
-  }
-}
-
-int read_from_Modbus(void* rec, const char* port, int type)
-{
-  int modbus_result = 1;
-  modbus_t *ctx;
-
-  ctx = modbus_new_rtu(port, 9600, 'N', 8,1);
-  modbus_set_slave(ctx, 1);
-  if (ctx == NULL) {
-    fprintf(stderr, "Unable to create the libmodbus context\n");
-    return 0;
-  }
-
-  modbus_result = (modbus_connect(ctx) == 0);
-  if (!modbus_result)
-  {
-    printf("modbus_connect failed\n");
-    modbus_result = 0;
-  }
-
-  if (modbus_result)
-  {
-    struct timeval response_timeout;
-    response_timeout.tv_sec = 5;
-    response_timeout.tv_usec = 0;
-    modbus_set_response_timeout(ctx, &response_timeout);
-
-    switch (type)
+    rc = modbus_read_registers(ctx, addr, 2, reg);
+    usleep(MAX_MODBUS_TR_TIMING * 2); //max transaction timing.
+    if ( rc == 2)
     {
-      case E_INSTANT_VALUES_RECORD:
-      {
-        INSTANT_VALUES_RECORD* record = (INSTANT_VALUES_RECORD*)rec;
-        modbus_result &= read_signed_32b(ctx, 13952,        &record->v1_voltage);
-        modbus_result &= read_signed_32b(ctx, 13952 + 2,    &record->v2_voltage);
-        modbus_result &= read_signed_32b(ctx, 13952 + 4,    &record->v3_voltage);
-        modbus_result &= read_signed_32b(ctx, 14336,        &record->total_kw);
-        modbus_result &= read_signed_32b(ctx, 14336 + 2,    &record->total_pf);
-      } break;
-      case E_DEMAND_VALUES_RECORD:
-      {
-        DEMAND_VALUES_RECORD* record = (DEMAND_VALUES_RECORD*)rec;
-        modbus_result &= read_unsigned_32b(ctx, 14592 + 12, &record->kw_import_block_demand);
-        modbus_result &= read_unsigned_32b(ctx, 14592 + 14, &record->kvar_import_block_demand);
-        modbus_result &= read_unsigned_32b(ctx, 14592 + 16, &record->kva_block_demand);
-      } break;
-      case E_ENERGY_VALUES_RECORD:
-      {
-        ENERGY_VALUES_RECORD* record = (ENERGY_VALUES_RECORD*)rec;
-        modbus_result &= read_unsigned_32b(ctx, 14720,      &record->kwh_import);
-        modbus_result &= read_unsigned_32b(ctx, 14848,      &record->kwh_import_l1);
-        modbus_result &= read_unsigned_32b(ctx, 14848 + 2,  &record->kwh_import_l2);
-        modbus_result &= read_unsigned_32b(ctx, 14848 + 4,  &record->kwh_import_l3);
-      } break;
-      default:
-        printf("Invalid reading type\n");
-        modbus_result = 0;
       break;
     }
   }
-
-  if (!modbus_result)
+  if (retries == 0)
   {
-    fprintf(stderr, "Modbus read failed\n");
+    SYSLOG("modbus_read_registers %d failed: %s\n", addr, modbus_strerror(errno));
+    return 0;
   }
+  else
+  {
+    *value = reg[1] * 65536 + reg[0];
+    //printf("modbus read from %d: %u,%u = %u\n", addr, reg[0], reg[1], *value);
+    return 1;
+  }
+}
 
 
-  modbus_flush(ctx);
-  modbus_close(ctx);
-  modbus_free(ctx);
+
+int read_from_Modbus(modbus_t *ctx, uint32_t* values, enum E_VALUES_RECORD type)
+{
+  int modbus_result = 1;
+  int i = 0;
+  METER_REGISTER_ARRAY meter_register_array[] = METER_REGISTER_ARRAY_INITIALIZER;
+  METER_REGISTER* meter_register = meter_register_array[type];
+
+  while (meter_register[i].name != 0 && modbus_result)
+  {
+    modbus_result = read_modbus_32b(ctx, meter_register[i].address, values, meter_register[i].is_signed);
+    i++;
+    values++;
+  }
 
   return modbus_result;
 }
 
-int write_to_DB(void* rec, PGconn* connection, int type)
+int write_to_DB(PGconn* connection, uint32_t* values, enum E_VALUES_RECORD type)
 {
   int query_result = 1;
-  char command[1024];
+  int i = 0;
+  char command[SQL_QUERY_STRING_MAX_SIZE];
+  char* pc = command;
+  char* table_names[] = TABLE_NAME_ARRAY_INITIALIZER;
+  METER_REGISTER_ARRAY meter_register_array[] = METER_REGISTER_ARRAY_INITIALIZER;
+  METER_REGISTER* meter_register = meter_register_array[type];
 
-  switch (type)
+  //build query format string
+  //header
+  sprintf(command,
+      "INSERT INTO %s VALUES (DEFAULT, DEFAULT, ",
+      table_names[type]
+      );
+  pc = &command[strlen(command) - 1];
+
+  //values
+  while (meter_register[i].name != 0)
   {
-    case E_INSTANT_VALUES_RECORD:
-    {
-      INSTANT_VALUES_RECORD* record = (INSTANT_VALUES_RECORD*)rec;
-      snprintf(command, sizeof(command),
-          "INSERT INTO public.instant_values_readings VALUES ("
-          "DEFAULT, DEFAULT, "
-          "\'%d\', \'%d\', \'%d\', \'%d\', \'%d\'"
-          ")",
-              record->v1_voltage,
-              record->v2_voltage,
-              record->v3_voltage,
-              record->total_kw,
-              record->total_pf
-      );
-    } break;
-    case E_DEMAND_VALUES_RECORD:
-    {
-      DEMAND_VALUES_RECORD* record = (DEMAND_VALUES_RECORD*)rec;
-      snprintf(command, sizeof(command),
-          "INSERT INTO public.demand_values_readings VALUES ("
-          "DEFAULT, DEFAULT, "
-          "\'%u\', \'%u\', \'%u\'"
-          ")",
-              record->kw_import_block_demand,
-              record->kvar_import_block_demand,
-              record->kva_block_demand
-      );
-    } break;
-    case E_ENERGY_VALUES_RECORD:
-    {
-      ENERGY_VALUES_RECORD* record = (ENERGY_VALUES_RECORD*)rec;
-      snprintf(command, sizeof(command),
-          "INSERT INTO public.energy_values_readings VALUES ("
-          "DEFAULT, DEFAULT, "
-          "\'%u\', \'%u\', \'%u\', \'%u\'"
-          ")",
-              record->kwh_import,
-              record->kwh_import_l1,
-              record->kwh_import_l2,
-              record->kwh_import_l3
-      );
-    } break;
-    default:
-      printf("Invalid reading type\n");
-      query_result = 0;
-    break;
+    char value_string[128];
+
+    sprintf(value_string,
+        (meter_register[i].is_signed? "\'%d\', " : "\'%u\', "),
+        (meter_register[i].is_signed? (int32_t)*values : *values));
+    sprintf(pc, "%s", value_string);
+    pc = &command[strlen(command) - 1];
+    i++;
+    values++;
   }
-
-
-
-  printf("%s\n", command);
+  //replace the last comma with a bracket
+  *(pc - 1) = ')';
 
   if (PQgetResult(connection) != NULL)
   {
-    fprintf(stderr, "Previous query failed: %s\n", PQerrorMessage(connection));
+    SYSLOG("Previous query failed: %s\n", PQerrorMessage(connection));
     query_result = 0;
   }
   else
@@ -206,11 +117,13 @@ int write_to_DB(void* rec, PGconn* connection, int type)
     query_result = PQsendQuery(connection, command);
     if (query_result != 1)
     {
-      fprintf(stderr, "Insert failed: %s\n", PQerrorMessage(connection));
+      SYSLOG("Insert failed: %s\n", PQerrorMessage(connection));
+      SYSLOG("%s\n", command);
     }
     else if (PQresultStatus(PQgetResult(connection)) != PGRES_COMMAND_OK)
     {
-      fprintf(stderr, "Query failed: %s\n", PQerrorMessage(connection));
+      SYSLOG("Query failed: %s\n", PQerrorMessage(connection));
+      SYSLOG("%s\n", command);
       query_result = 0;
     }
 
@@ -218,24 +131,81 @@ int write_to_DB(void* rec, PGconn* connection, int type)
   return query_result;
 }
 
+PGconn*     psql_connection = NULL;
+modbus_t*   ctx = NULL;
+
+static void signal_handler(int signal)
+{
+  if (signal == SIGTERM)
+  {
+    if (psql_connection)
+    {
+      PQfinish(psql_connection);
+    }
+    if (ctx)
+    {
+      modbus_flush(ctx);
+      modbus_close(ctx);
+      modbus_free(ctx);
+    }
+    exit(EXIT_SUCCESS);
+  }
+}
 
 int main(int argc, char** argv)
 {
 
   const char* psql_conninfo = "dbname = energyMeterDB";
-  PGconn*     psql_connection;
   unsigned long long counter = 0;
+
+  openlog(argv[0], LOG_CONS | LOG_PID, LOG_LOCAL1);
+  setlogmask(LOG_UPTO(LOG_NOTICE));
 
   if (argc < 2)
   {
-    fprintf(stderr, "usage: %s serial_port\n", argv[0]);
-    exit(1);
+    SYSLOG("usage: %s serial_port\n", argv[0]);
+    return EXIT_FAILURE;
   }
+
+  if (signal(SIGTERM, signal_handler) == SIG_ERR)
+  {
+    SYSLOG("An error occurred while setting a signal handler.\n");
+    return EXIT_FAILURE;
+  }
+
+  ctx = modbus_new_rtu(argv[1], 9600, 'N', 8,1);
+  if (ctx == NULL)
+  {
+    SYSLOG("Unable to create the libmodbus context\n");
+    return EXIT_FAILURE;
+  }
+  if (modbus_connect(ctx) == -1)
+  {
+    modbus_free(ctx);
+    SYSLOG("Modbus_connect failed on port %s\n", argv[1]);
+    return EXIT_FAILURE;
+  }
+  if (modbus_set_slave(ctx, 1) == -1)
+  {
+    modbus_free(ctx);
+    SYSLOG("Modbus_connect failed on port %s\n", argv[1]);
+    return EXIT_FAILURE;
+  }
+
+#if INCREASE_MODBUS_TIMEOUT
+  {
+    struct timeval response_timeout;
+    response_timeout.tv_sec = INCREASE_MODBUS_TIMEOUT;
+    response_timeout.tv_usec = 0;
+    modbus_set_response_timeout(ctx, &response_timeout);
+  }
+#endif
+
 
   psql_connection = PQconnectdb(psql_conninfo);
   if (PQstatus(psql_connection) != CONNECTION_OK)
   {
-    fprintf(stderr, "Connection to database failed: %s\n",
+    SYSLOG("Connection to database failed: %s\n",
         PQerrorMessage(psql_connection));
     exit_nicely(psql_connection);
   }
@@ -243,46 +213,44 @@ int main(int argc, char** argv)
 
   while (1)
   {
+    uint32_t values[METER_REGISTER_MAX_SIZE];
 
     if (counter % INSTANT_VALUES_INTERVAL == 0)
     {
-      INSTANT_VALUES_RECORD record;
-      if (!read_from_Modbus(&record, argv[1], E_INSTANT_VALUES_RECORD))
+      if (!read_from_Modbus(ctx, values, E_INSTANT_VALUES_RECORD))
       {
-        fprintf(stderr, "read_from_Modbus failed\n");
+        SYSLOG("read_from_Modbus failed\n");
         break;
       }
-      if (!write_to_DB(&record, psql_connection, E_INSTANT_VALUES_RECORD))
+      if (!write_to_DB(psql_connection, values, E_INSTANT_VALUES_RECORD))
       {
-        fprintf(stderr, "write_to_DB failed\n");
+        SYSLOG("write_to_DB failed\n");
         break;
       }
     }
     if (counter % DEMAND_VALUES_INTERVAL == 0)
     {
-      DEMAND_VALUES_RECORD record;
-      if (!read_from_Modbus(&record, argv[1], E_DEMAND_VALUES_RECORD))
+      if (!read_from_Modbus(ctx, values, E_DEMAND_VALUES_RECORD))
       {
-        fprintf(stderr, "read_from_Modbus failed\n");
+        SYSLOG("read_from_Modbus failed\n");
         break;
       }
-      if (!write_to_DB(&record, psql_connection, E_DEMAND_VALUES_RECORD))
+      if (!write_to_DB(psql_connection, values, E_DEMAND_VALUES_RECORD))
       {
-        fprintf(stderr, "write_to_DB failed\n");
+        SYSLOG("write_to_DB failed\n");
         break;
       }
     }
     if (counter % ENERGY_VALUES_INTERVAL == 0)
     {
-      ENERGY_VALUES_RECORD record;
-      if (!read_from_Modbus(&record, argv[1], E_ENERGY_VALUES_RECORD))
+      if (!read_from_Modbus(ctx, values, E_ENERGY_VALUES_RECORD))
       {
-        fprintf(stderr, "read_from_Modbus failed\n");
+        SYSLOG("read_from_Modbus failed\n");
         break;
       }
-      if (!write_to_DB(&record, psql_connection, E_ENERGY_VALUES_RECORD))
+      if (!write_to_DB(psql_connection, values, E_ENERGY_VALUES_RECORD))
       {
-        fprintf(stderr, "write_to_DB failed\n");
+        SYSLOG("write_to_DB failed\n");
         break;
       }
     }
@@ -292,7 +260,9 @@ int main(int argc, char** argv)
   }
 
   PQfinish(psql_connection);
+  modbus_flush(ctx);
+  modbus_close(ctx);
+  modbus_free(ctx);
 
-  return 0;
+  return EXIT_SUCCESS;
 }
-
