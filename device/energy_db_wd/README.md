@@ -15,7 +15,7 @@ cp ./src/.libs/libmodbus.a <root of working dir>/device/energy_db_wd/lib/
 
 
 Build:
-gcc -I./lib/ -lpq -o "energy_db_wd" ./src/energy_db_wd.c ./lib/libmodbus.a
+gcc -I./lib/ -lpq -o "cenergy" ./src/energy_db_wd.c ./lib/libmodbus.a
 
 
 Quick start for the database:
@@ -87,6 +87,6 @@ CREATE TABLE energy
 
 
 Installing the service:
-1. create PostgreSQL user 'root'
+1. copy (or simlink) cenergy binary to /usr/local/bin
 2. copy energy_db_wd.conf to /etc/init
 
