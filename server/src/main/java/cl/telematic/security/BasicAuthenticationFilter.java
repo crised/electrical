@@ -41,7 +41,7 @@ public class BasicAuthenticationFilter implements ContainerRequestFilter {
 
         //If no authorization information present; block access
         if (authorization == null || authorization.isEmpty()) {
-            requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).header("WWW-Authenticate", "Basic realm=\"Realm\"").build());
+            sendUnauthorized(requestContext);
             return;
         }
 
@@ -54,21 +54,24 @@ public class BasicAuthenticationFilter implements ContainerRequestFilter {
             usernameAndPassword = new String(Base64.decode(encodedUserPassword));
         } catch (IOException e) {
             LOGGER.error("Cannot decode credentials Base64", e);
-            e.printStackTrace();//TODO we probably should use better logger
             requestContext.abortWith(Response.serverError().build());
             return;
         }
 
         //Split username and password tokens
         final StringTokenizer tokenizer = new StringTokenizer(usernameAndPassword, ":");
-        final String username = tokenizer.nextToken();
-        final String password = tokenizer.nextToken();
+        final String username = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : "";
+        final String password = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : "";
         try {
             httpServletRequest.login(username, password);
         } catch (ServletException e) {
             LOGGER.error("Cannot login", e);
-            e.printStackTrace();//TODO we probably should use better logger
-            requestContext.abortWith(Response.serverError().build());
+            sendUnauthorized(requestContext);
         }
+    }
+
+    private void sendUnauthorized(ContainerRequestContext requestContext)
+    {
+        requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).header("WWW-Authenticate", "Basic realm=\"Realm\"").build());
     }
 }

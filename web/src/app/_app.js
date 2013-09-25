@@ -1,5 +1,4 @@
-var electrical = angular.module("Electrical",
-        ['ui.bootstrap', 'ngResource', 'models.MessageFactory', 'services.ExceptionHandler', 'devices', 'users']);
+var electrical = angular.module("Electrical", ['ui.bootstrap', 'ngResource', 'models.MessageFactory', 'services.ExceptionHandler', 'devices', 'users']);
 
 electrical.config(['$routeProvider', '$locationProvider', function ($routeProvider, $locationProvider)
 {
@@ -9,6 +8,23 @@ electrical.config(['$routeProvider', '$locationProvider', function ($routeProvid
             {controller: 'UserEditCtrl', templateUrl: 'app/users/me.html'}).otherwise({redirectTo: '/devices'});
 
 }]);
+
+electrical.controller("LogoutCtrl", function ($scope, $location, $timeout)
+{
+
+    $scope.logout = function ()
+    {
+        jQuery.ajax(applicationContextPath + "/rest/user/me", {username: "logout", error: function ()
+        {
+            $timeout(function ()
+            {
+                $scope.$root.errorMessage = "Invalid credentials!";
+                $location.path("/error");
+            })
+
+        }});
+    }
+});
 
 electrical.config(function ($provide)
 {

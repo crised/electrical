@@ -17,7 +17,8 @@ angular.module('services.ExceptionHandler', []).config(function ($httpProvider)
                     $scope.errorMessage = "Request cannot be fulfilled due to bad syntax!";
                     break;
                 case 401:
-                    return response; // Let http-auth-interceptor.js handle this response
+                    $scope.errorMessage = "Invalid credentials!";
+                    break;
                 case 403:
                     $scope.errorMessage = "You don't have access to this page or resource!";
                     break;

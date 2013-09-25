@@ -22,11 +22,9 @@
             <li><a href="#!/devices">Devices</a></li>
             <li><a href="#!/me">Me</a></li>
         </ul>
-        <p class="navbar-text pull-right" style="margin-right: 5em" ng-show="user.name">
-            <a class="btn btn-success" ng-click="logout()">Logout</a>
+        <p class="navbar-text pull-right" style="margin-right: 5em">
+            <a class="btn btn-success" ng-controller="LogoutCtrl" ng-click="logout()">Logout</a>
         </p>
-
-        <p class="navbar-text pull-right" style="margin-right: 5em" ng-show="user.name">Welcome {{user.name}}</p>
     </div>
 </div>
 
