@@ -5,27 +5,22 @@
     <title>Electrical</title>
     <link href="less/style.css" rel="stylesheet"/>
     <script src="../vendor/jquery/jquery.js"></script>
-    <script src="../vendor/jquery/jquery.i18n.properties-min-1.0.9.js"></script>
     <script src="../api-settings.js"></script>
     <link href="../vendor/bootstrap/css/bootstrap-responsive.css" rel="stylesheet" media="screen">
     <link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
 </head>
-<body ng-app="Electrical" class="ng-authentication waiting-for-angular">
+<body ng-app="Electrical">
 
 <div ng-messages stay-time="5000"></div>
 
 <div class="navbar navbar-fixed">
     <div class="navbar-inner">
         <a class="brand" href="#">
-            <msg key="title"></msg>
+            Electrical
         </a>
         <ul class="nav">
             <li><a href="#!/devices">Devices</a></li>
             <li><a href="#!/me">Me</a></li>
-        </ul>
-        <ul class="nav nav-pills pull-right">
-            <li><a ng-click="setLanguage('de')">Deutsch</a></li>
-            <li><a ng-click="setLanguage('en')">English</a></li>
         </ul>
         <p class="navbar-text pull-right" style="margin-right: 5em" ng-show="user.name">
             <a class="btn btn-success" ng-click="logout()">Logout</a>
@@ -38,98 +33,19 @@
 <div id="initializing-panel"></div>
 
 <div id="content-wrapper">
-    <div id="login-holder" ng-controller="LoginCtrl">
-        <div class="panel">
-            <form ng-submit="login()" class="form-horizontal" ng-hide="isSignupMode()">
-                <div class="control-group">
-                    <label class="control-label" for="inputUsername">Email</label>
-
-                    <div class="controls">
-                        <input type="text" id="inputUsername" ng-model="credentials.email">
-                    </div>
-                </div>
-                <div class="control-group">
-                    <label class="control-label" for="inputPassword">Password</label>
-
-                    <div class="controls">
-                        <input type="password" id="inputPassword" ng-model="credentials.password">
-                    </div>
-                </div>
-                <div class="control-group">
-                    <div class="controls">
-                        <button type="submit" class="btn btn-primary">Sign in</button>
-                        <button type="button" class="btn-link" ng-click="showSignupForm()">Sign up</button>
-                    </div>
-                </div>
-            </form>
-            <form ng-submit="register()" class="form-horizontal" ng-show="isSignupMode()">
-                <div class="control-group">
-                    <label class="control-label" for="inputEmail2">Email</label>
-
-                    <div class="controls">
-                        <input type="text" id="inputEmail2" ng-model="credentials.email" required autofocus>
-                    </div>
-                </div>
-                <div class="control-group">
-                    <label class="control-label" for="name">Name</label>
-
-                    <div class="controls">
-                        <input type="text" id="name" ng-model="credentials.name" required placeholder="Your Name">
-                    </div>
-                </div>
-                <div class="control-group">
-                    <label class="control-label" for="phone">Phone</label>
-
-                    <div class="controls">
-                        <input type="text" id="phone" ng-model="credentials.phone" pattern="[0-9]{10,12}" required placeholder="Your Phone #">
-                    </div>
-                </div>
-                <div class="control-group">
-                    <label class="control-label" for="inputPassword2">Password</label>
-
-                    <div class="controls">
-                        <input type="password" id="inputPassword2" ng-model="credentials.password" required>
-                    </div>
-                </div>
-                <div class="control-group">
-                    <label class="control-label" for="inputPasswordConfirmation">Confirm password</label>
-
-                    <div class="controls">
-                        <input type="password" id="inputPasswordConfirmation" ng-model="passwordConfirmation" required>
-                    </div>
-                </div>
-                <div class="control-group">
-                    <div class="controls">
-                        <button type="submit" class="btn btn-primary">Sign up</button>
-                        <button type="button" class="btn-link" ng-click="showSigninForm()">Sign in</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <div ng-view id="content"></div>
 </div>
 
 <script src="../vendor/angular/angular.js"></script>
 <script src="../vendor/angular/angular-resource.js"></script>
-<script src="../vendor/angular/angular-cookies.js"></script>
-<script src="../vendor/angular/http-auth-interceptor.js"></script>
 <script src="../vendor/angular-ui/ui-bootstrap-tpls-0.6.0.js"></script>
 <script src="../vendor/bootstrap/js/bootstrap.min.js"></script>
-<script src="../vendor/jquery/jquery.cookie.js"></script>
 <script src="app/_app.js"></script>
-<script src="common/services/authenticator.js"></script>
 <script src="common/services/deviceDAO.js"></script>
 <script src="common/services/exceptionHandler.js"></script>
-<script src="common/services/i18n.js"></script>
 <script src="common/services/userDAO.js"></script>
 <script src="common/models/messageFactory.js"></script>
-<script src="common/directives/ngAuthentication.js"></script>
-<script src="common/directives/ngSuggest.js"></script>
 <script src="common/directives/ngFocus.js"></script>
-<script src="common/directives/ngMessages.js"></script>
-<script src="common/directives/ngMsg.js"></script>
 <script src="app/devices/_devices.js"></script>
 <script src="app/devices/deviceList.js"></script>
 <script src="app/devices/deviceStats.js"></script>

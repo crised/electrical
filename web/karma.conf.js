@@ -9,8 +9,8 @@ basePath = '';
 
 // list of files / patterns to load in the browser
 files = [
-    JASMINE, JASMINE_ADAPTER, 'api-settings.js', 'vendor/angular/angular.js', 'vendor/angular/angular-cookies.js', 'vendor/angular/angular-resource.js',
-    'vendor/angular/angular-mocks.js', 'vendor/angular/http-auth-interceptor.js', 'vendor/angular-ui/ui-bootstrap-tpls-0.4.0.js', 'vendor/showdown.js', 'vendor/window-dialog-commands.js', 'src/**/*.js',
+    JASMINE, JASMINE_ADAPTER, 'api-settings.js', 'vendor/angular/angular.js', 'vendor/angular/angular-resource.js',
+    'vendor/angular/angular-mocks.js', 'vendor/angular-ui/ui-bootstrap-tpls-0.4.0.js', 'vendor/window-dialog-commands.js', 'src/**/*.js',
     'test/unit/**/*.js'
 ];
 

@@ -1,4 +1,4 @@
-users.controller('UserListCtrl', function ($scope, $location, Authenticator, MessageFactory, UserDAO)
+users.controller('UserListCtrl', function ($scope, $location, MessageFactory, UserDAO)
 {
     $scope.users = [];
 

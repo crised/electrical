@@ -1,4 +1,4 @@
-users.controller('UserRegistrationCtrl', function ($scope, $location, Authenticator, MessageFactory, UserDAO)
+users.controller('UserRegistrationCtrl', function ($scope, $location, MessageFactory, UserDAO)
 {
     $scope.user = {id: null};
 

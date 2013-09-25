@@ -1,4 +1,4 @@
-users.controller('UserEditCtrl', function ($scope, $location, $routeParams, Authenticator, MessageFactory, UserDAO)
+users.controller('UserEditCtrl', function ($scope, $location, $routeParams, MessageFactory, UserDAO)
 {
     var originalUser , editMode, viewReady;
     $scope.user = {id: null};
