@@ -5,8 +5,8 @@
  *      Author: rnicolau
  */
 
-#ifndef ENERGY_DB_WD_H_
-#define ENERGY_DB_WD_H_
+#ifndef CENERGY_H_
+#define CENERGY_H_
 
 #include <stdint.h>
 
@@ -91,4 +91,4 @@ typedef METER_REGISTER METER_REGISTER_ARRAY[METER_REGISTER_MAX_SIZE];
 #endif
 
 
-#endif /* ENERGY_DB_WD_H_ */
+#endif /* CENERGY_H_ */
