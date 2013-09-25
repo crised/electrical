@@ -15,9 +15,7 @@ cp ./src/.libs/libmodbus.a <root of working dir>/device/energy_db_wd/lib/
 
 
 Build:
-gcc $(pkg-config --cflags --libs libmodbus libpq) -o "energy_db_wd" ./src/energy_db_wd.c
-or if pkg-config fails
-gcc -lpq -lmodbus -o "energy_db_wd" ./src/energy_db_wd.c
+gcc -I./lib/ -lpq -o "energy_db_wd" ./src/energy_db_wd.c ./lib/libmodbus.a
 
 
 Quick start for the database:
@@ -29,8 +27,8 @@ input all prompted data then exit
 
 
 2.create the database and the table:
-createdb energyMeterDB
-psql energyMeterDB
+createdb cenergy
+psql cenergy
 
 3 tables:
 
@@ -47,11 +45,11 @@ psql energyMeterDB
 -------------copy from here-----------
 
 
-DROP TABLE instant_values_readings;
-DROP TABLE demand_values_readings;
-DROP TABLE energy_values_readings;
+DROP TABLE instant;
+DROP TABLE demand;
+DROP TABLE energy;
 
-CREATE TABLE instant_values_readings
+CREATE TABLE instant
 (
   datetime timestamp DEFAULT now(),
   sent boolean DEFAULT 'false',
@@ -63,7 +61,7 @@ CREATE TABLE instant_values_readings
   PRIMARY KEY(datetime)
 );
 
-CREATE TABLE demand_values_readings
+CREATE TABLE demand
 (
   datetime timestamp DEFAULT now(),
   sent boolean DEFAULT 'false',
@@ -73,7 +71,7 @@ CREATE TABLE demand_values_readings
   PRIMARY KEY(datetime)
 );
 
-CREATE TABLE energy_values_readings
+CREATE TABLE energy
 (
   datetime timestamp DEFAULT now(),
   sent boolean DEFAULT 'false',

@@ -155,7 +155,7 @@ static void signal_handler(int signal)
 int main(int argc, char** argv)
 {
 
-  const char* psql_conninfo = "dbname = energyMeterDB";
+  const char* psql_conninfo = "dbname = cenergy";
   unsigned long long counter = 0;
 
   openlog(argv[0], LOG_CONS | LOG_PID, LOG_LOCAL1);

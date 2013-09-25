@@ -39,6 +39,7 @@ typedef struct METER_REGISTER
 {\
 {"v1_voltage",    13952,        0}, \
 {"v2_voltage",    13952 + 2,    0}, \
+{"v3_voltage",    13952 + 4,    0}, \
 {"total_kw",      14336 ,       1}, \
 {"total_pf",      14336 + 2 ,   1}, \
 {0, 0, 0}, \
@@ -61,7 +62,7 @@ typedef struct METER_REGISTER
 {0, 0, 0}, \
 }
 
-#define METER_REGISTER_MAX_SIZE (5)
+#define METER_REGISTER_MAX_SIZE (6)
 typedef METER_REGISTER METER_REGISTER_ARRAY[METER_REGISTER_MAX_SIZE];
 
 #define METER_REGISTER_ARRAY_INITIALIZER \
@@ -74,9 +75,9 @@ typedef METER_REGISTER METER_REGISTER_ARRAY[METER_REGISTER_MAX_SIZE];
 
 #define TABLE_NAME_ARRAY_INITIALIZER \
 {\
-    "public.instant_values_readings", \
-    "public.demand_values_readings", \
-    "public.energy_values_readings"  \
+    "public.instant", \
+    "public.demand",  \
+    "public.energy"   \
 }
 
 #define SQL_QUERY_STRING_MAX_SIZE (1024)
