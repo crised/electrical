@@ -1,5 +1,5 @@
 /*
- * energy_db_wd.h
+ * cenergy.h
  *
  *  Created on: 21 Sep 2013
  *      Author: rnicolau

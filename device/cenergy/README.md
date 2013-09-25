@@ -15,7 +15,7 @@ cp ./src/.libs/libmodbus.a <root of working dir>/device/energy_db_wd/lib/
 
 
 Build:
-gcc -I./lib/ -lpq -o "cenergy" ./src/energy_db_wd.c ./lib/libmodbus.a
+gcc -I./lib/ -lpq -o "cenergy" ./src/cenergy.c ./lib/libmodbus.a
 
 
 Quick start for the database:

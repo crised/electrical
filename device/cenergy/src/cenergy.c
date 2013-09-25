@@ -1,11 +1,11 @@
 /*
- * energy_db_wd.c
+ * cenergy.c
  *
  *  Created on: 21 Sep 2013
  *      Author: rnicolau
  */
 
-#include "energy_db_wd.h"
+#include "cenergy.h"
 
 #include <stdio.h>
 #include <stdlib.h>
