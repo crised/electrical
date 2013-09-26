@@ -49,8 +49,11 @@ DROP TABLE instant;
 DROP TABLE demand;
 DROP TABLE energy;
 
+CREATE SEQUENCE id_sequence;
+
 CREATE TABLE instant
 (
+  id bigint NOT NULL,
   datetime timestamp DEFAULT now(),
   sent boolean DEFAULT 'false',
   v1_voltage bigint,
@@ -58,32 +61,40 @@ CREATE TABLE instant
   v3_voltage bigint,
   total_kw integer,
   total_pf integer,
-  PRIMARY KEY(datetime)
+  PRIMARY KEY(id)
 );
 
 CREATE TABLE demand
 (
+  id bigint NOT NULL,
   datetime timestamp DEFAULT now(),
   sent boolean DEFAULT 'false',
   kw_import_block_demand bigint,
   kvar_import_block_demand bigint,
   kva_block_demand bigint,
-  PRIMARY KEY(datetime)
+  PRIMARY KEY(id)
 );
 
 CREATE TABLE energy
 (
+  id bigint NOT NULL,
   datetime timestamp DEFAULT now(),
   sent boolean DEFAULT 'false',
   kwh_import bigint,
   kwh_import_l1 bigint,
   kwh_import_l2 bigint,
   kwh_import_l3 bigint,
-  PRIMARY KEY(datetime)
+  PRIMARY KEY(id)
 );
 
 -------------copy to here-----------
 
+Sample insert
+
+``
+insert into demand (id,datetime, sent, kw_import_block_demand, kvar_import_block_demand, kva_block_demand)
+    values (nextval('id_sequence'),now(),false,1,2,3);
+``
 
 
 Installing the service:
