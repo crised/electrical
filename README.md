@@ -3,6 +3,12 @@ electrical
 
 Intel NUC working as expected, CentOS 6.4 x86_64
 
+3 Instances are up & running:
+
+23.21.60.18 -> JBoss 
+23.21.96.77 -> Httpd
+107.21.233.48 -> Syslog-ng
+
 Electrical M2M software to get an Electrical Bill approximation
 
 EJB, CDI, Entities, JAX-RS, Arquillian. 
