@@ -3,8 +3,8 @@ package cl.telematic.dao;
 import cl.telematic.model.DemandStats;
 import cl.telematic.model.Device;
 import cl.telematic.model.EnergyStats;
-import cl.telematic.rest.domain.InstantStats;
 import cl.telematic.rest.domain.DeviceStats;
+import cl.telematic.rest.domain.InstantStats;
 import org.jboss.logging.Logger;
 
 import javax.annotation.Nonnull;
@@ -37,9 +37,9 @@ public class StatsDAO {
     @Nullable
     public DeviceStats getStats(@Nonnull Device device, @Nonnull Date start, @Nonnull Date end)
     {
-        Number activePowerTotalMax18_23;
+        Long activePowerTotalMax18_23;
         try {
-            activePowerTotalMax18_23 = (Number) entityManager.createQuery(
+            activePowerTotalMax18_23 = (Long) entityManager.createQuery(
                 "select max(kva_block_demand) from DemandStats where device.id=:id and createdOn between :start and :end and hour between 18 and 23 group by device.id")
                 .setParameter("id", device.getId())
                 .setParameter("start", start)
@@ -108,7 +108,7 @@ public class StatsDAO {
 
     @Nonnull
     private DeviceStats toDeviceStats(@Nonnull Device device, @Nullable Object[] result, EnergyStats energyStatsA, EnergyStats energyStatsB,
-                                      @Nullable Number activePowerTotalMax18_23)
+                                      @Nullable Long activePowerTotalMax18_23)
     {
         final DeviceStats deviceStats = new DeviceStats();
         if (null != result) {

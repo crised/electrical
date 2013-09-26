@@ -2,7 +2,7 @@ package cl.telematic.rest.domain;
 
 public class DeviceStats {
 
-    private Number activePowerTotalMax18_23;
+    private Long activePowerTotalMax18_23;
 
     private Long deviceId;
 
@@ -32,12 +32,12 @@ public class DeviceStats {
 
     private Long v3_voltage;
 
-    public Number getActivePowerTotalMax18_23()
+    public Long getActivePowerTotalMax18_23()
     {
         return activePowerTotalMax18_23;
     }
 
-    public void setActivePowerTotalMax18_23(Number activePowerTotalMax18_23)
+    public void setActivePowerTotalMax18_23(Long activePowerTotalMax18_23)
     {
         this.activePowerTotalMax18_23 = activePowerTotalMax18_23;
     }
