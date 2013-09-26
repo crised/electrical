@@ -1,7 +1,8 @@
 package cl.telematic.rest;
 
-import cl.telematic.model.ActiveTotalEnergyStats;
-import cl.telematic.model.ElectricalStats;
+import cl.telematic.rest.domain.InstantStats;
+import cl.telematic.rest.domain.DemandStats;
+import cl.telematic.rest.domain.EnergyStats;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -24,8 +25,17 @@ public interface StatsResource {
      */
 //    @ValidateRequest
     @POST
-    @Path("/{device}/ELE")
-    Response save(@NotNull @PathParam("device") Long deviceId, @NotNull @Valid ElectricalStats stats);
+    @Path("/{device}/DMD")
+    Response save(@NotNull @PathParam("device") Long deviceId, @NotNull @Valid DemandStats stats);
+
+    /**
+     * There is a bug RESTEASY-913 that does not allow @NotNull @Valid annotation to param
+     * TODO uncomment @ValidateRequest once RESTEASY-913 is fixed
+     */
+//    @ValidateRequest
+    @POST
+    @Path("/{device}/ENG")
+    Response save(@NotNull @PathParam("device") Long deviceId, @NotNull @Valid EnergyStats stats);
 
     /**
      * There is a bug RESTEASY-913 that does not allow @NotNull @Valid annotation to param
@@ -34,5 +44,5 @@ public interface StatsResource {
     //    @ValidateRequest
     @POST
     @Path("/{device}/ATE")
-    Response save(@NotNull @PathParam("device") Long deviceId, @NotNull @Valid ActiveTotalEnergyStats stats);
+    Response save(@NotNull @PathParam("device") Long deviceId, @NotNull @Valid InstantStats stats);
 }

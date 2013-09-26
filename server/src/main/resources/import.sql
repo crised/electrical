@@ -1,6 +1,9 @@
-insert into users (id, name,  email, role, phone_number, password) values (1, 'Test User', 'test@test.com', 'ADMIN', '2125551212', 'f368a29b71bd201a7ef78b5df88b1361fbe83f959756d33793837a5d7b2eaf660f2f6c7e2fbace01965683c4cfafded3ff28aab34e329aa79bc81e7703f68b86');
+INSERT INTO users (id, name, email, role, phone_number, password) VALUES (1, 'Test User', 'test@test.com', 'ADMIN', '2125551212', 'f368a29b71bd201a7ef78b5df88b1361fbe83f959756d33793837a5d7b2eaf660f2f6c7e2fbace01965683c4cfafded3ff28aab34e329aa79bc81e7703f68b86');
 
-insert into device (id, name, user_id) values (1, 'abc', 1);
+INSERT INTO device (id, name, user_id) VALUES (1, 'abc', 1);
 
-insert into stats_entry (id,created_date,hour,device_id,stats_type,active_total_energy,active_power_1,active_power_2,active_power_3,active_power_total,apparent_power_1,apparent_power_2,apparent_power_3,apparent_power_total,current_in_neutral,current_1,current_2,current_3,frequency_1,frequency_2,frequency_3,reactive_power_1,reactive_power_2,reactive_power_3,reactive_power_total,voltage_1,voltage_2,voltage_3) values (1,now(),18,1,'ELE',1,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22);
-insert into stats_entry (id,created_date,hour,device_id,stats_type,active_total_energy,active_power_1,active_power_2,active_power_3,active_power_total,apparent_power_1,apparent_power_2,apparent_power_3,apparent_power_total,current_in_neutral,current_1,current_2,current_3,frequency_1,frequency_2,frequency_3,reactive_power_1,reactive_power_2,reactive_power_3,reactive_power_total,voltage_1,voltage_2,voltage_3) values (2,now(),17,1,'ELE',5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,1,1,2,3,4);
+INSERT INTO stats_entry (stats_type, id, created_date, kwh_import, kwh_import_l1, kwh_import_l2, kwh_import_l3, device_id) VALUES ('ENG', nextval('hibernate_sequence'), now(), 1, 2, 3, 4, 1);
+INSERT INTO stats_entry (stats_type, id, created_date, kwh_import, kwh_import_l1, kwh_import_l2, kwh_import_l3, device_id) VALUES ('ENG', nextval('hibernate_sequence'), now(), 4, 5, 6, 7, 1);
+
+INSERT INTO stats_entry (stats_type, id, created_date, hour, kva_block_demand, kvar_import_block_demand, kw_import_block_demand, device_id) VALUES ('DMD', nextval('hibernate_sequence'), now(), 4, 5, 6, 7, 1);
+INSERT INTO stats_entry (stats_type, id, created_date, hour, kva_block_demand, kvar_import_block_demand, kw_import_block_demand, device_id) VALUES ('DMD', nextval('hibernate_sequence'), now(), 18, 9, 10, 11, 1);

@@ -1,8 +1,9 @@
 package cl.telematic.rest;
 
 import cl.telematic.business.DeviceManager;
-import cl.telematic.model.Device;
-import cl.telematic.model.DeviceStats;
+import cl.telematic.business.StatsManager;
+import cl.telematic.rest.domain.Device;
+import cl.telematic.rest.domain.DeviceStats;
 import cl.telematic.security.Authenticated;
 
 import javax.annotation.Nonnull;
@@ -17,25 +18,30 @@ import java.util.List;
 @Stateless
 public class DeviceResourceImpl implements DeviceResource {
 
-    //TODO return objects from rest domain (hide user password)
     @EJB
     private DeviceManager deviceManager;
 
+    @EJB
+    private DomainConverter domainConverter;
+
     @Context
     private HttpServletRequest request;
+
+    @EJB
+    private StatsManager statsManager;
 
     @Authenticated
     @Override
     public DeviceStats getDeviceStats(@Nonnull Long id, @Nonnull Long start, @Nonnull Long end)
     {
-        return deviceManager.getDeviceStats(id, new Date(start), new Date(end));
+        return statsManager.getDeviceStats(id, new Date(start), new Date(end));
     }
 
     @Authenticated
     @Override
     public List<Device> getMyDevices()
     {
-        return deviceManager.getMyDevices();
+        return domainConverter.toRestDeviceList(deviceManager.getMyDevices());
     }
 
     @Override

@@ -24,46 +24,6 @@ devices.controller('DeviceStatsCtrl', function ($scope, $routeParams, $timeout, 
         });
     };
 
-    $scope.selectPhase = function (phase)
-    {
-        $scope.phase = phase;
-    };
-
-    $scope.isPhase = function (phase)
-    {
-        return $scope.phase === phase;
-    };
-
-    $scope.selectStatTypeAVG = function ()
-    {
-        $scope.statType = STAT_TYPE_AVG;
-    };
-
-    $scope.selectStatTypeMIN = function ()
-    {
-        $scope.statType = STAT_TYPE_MIN;
-    };
-
-    $scope.selectStatTypeMAX = function ()
-    {
-        $scope.statType = STAT_TYPE_MAX;
-    };
-
-    $scope.isStatTypeAVG = function ()
-    {
-        return $scope.statType === STAT_TYPE_AVG;
-    };
-
-    $scope.isStatTypeMAX = function ()
-    {
-        return $scope.statType === STAT_TYPE_MAX;
-    };
-
-    $scope.isStatTypeMIN = function ()
-    {
-        return $scope.statType === STAT_TYPE_MIN;
-    };
-
     $scope.openEndDate = function ()
     {
         $timeout(function ()
@@ -127,6 +87,14 @@ devices.controller('DeviceStatsCtrl', function ($scope, $routeParams, $timeout, 
 
     refreshStats();
 
-    $scope.$watch("startDate", refreshStats);
-    $scope.$watch("endDate", refreshStats);
+    function dateChangeListener(oldValue, newValue)
+    {
+        if (oldValue === newValue) {
+            return;
+        }
+        refreshStats();
+    }
+
+    $scope.$watch("startDate", dateChangeListener, true);
+    $scope.$watch("endDate", dateChangeListener, true);
 });

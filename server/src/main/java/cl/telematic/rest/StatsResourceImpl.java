@@ -1,8 +1,9 @@
 package cl.telematic.rest;
 
 import cl.telematic.business.StatsManager;
-import cl.telematic.model.ActiveTotalEnergyStats;
-import cl.telematic.model.ElectricalStats;
+import cl.telematic.rest.domain.InstantStats;
+import cl.telematic.rest.domain.DemandStats;
+import cl.telematic.rest.domain.EnergyStats;
 
 import javax.annotation.Nonnull;
 import javax.ejb.EJB;
@@ -13,19 +14,29 @@ import javax.ws.rs.core.Response;
 public class StatsResourceImpl implements StatsResource {
 
     @EJB
+    private DomainConverter domainConverter;
+
+    @EJB
     private StatsManager statsManager;
 
     @Override
-    public Response save(@Nonnull Long deviceId, @Nonnull ActiveTotalEnergyStats stats)
+    public Response save(@Nonnull Long deviceId, @Nonnull InstantStats stats)
     {
         statsManager.save(deviceId, stats);
         return Response.ok().build();
     }
 
     @Override
-    public Response save(@Nonnull Long deviceId, @Nonnull ElectricalStats stats)
+    public Response save(@Nonnull Long deviceId, @Nonnull DemandStats stats)
     {
-        statsManager.save(deviceId, stats);
+        statsManager.save(deviceId, domainConverter.toDBDomain(stats));
+        return Response.ok().build();
+    }
+
+    @Override
+    public Response save(@Nonnull Long deviceId, @Nonnull EnergyStats stats)
+    {
+        statsManager.save(deviceId, domainConverter.toDBDomain(stats));
         return Response.ok().build();
     }
 }

@@ -81,14 +81,18 @@ public class UserManager {
 
     @PermitAll
     @Nonnull
-    public User register(@Nonnull User user) throws EmailAleadyRegisteredException, MessagingException
+    public User register(@Nonnull User user) throws EmailAleadyRegisteredException
     {
         final String email = user.getEmail();
         if (null == userDAO.findByEmail(email)) {
             user.setRole(UserRole.USER);
             final String password = RandomStringUtils.randomAlphanumeric(6);
             user.setPassword(hashPassword(password));
-            sendRegistrationEmail(user, password);
+            try {
+                sendRegistrationEmail(user, password);
+            } catch (MessagingException e) {
+                throw new RuntimeException("Cannot send registration mail", e);
+            }
             return userDAO.save(user);
         } else {
             throw new EmailAleadyRegisteredException("Email already registered: " + email);

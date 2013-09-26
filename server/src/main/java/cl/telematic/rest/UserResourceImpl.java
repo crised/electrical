@@ -16,7 +16,6 @@
  */
 package cl.telematic.rest;
 
-import cl.telematic.business.EmailAleadyRegisteredException;
 import cl.telematic.business.InvalidCredentialsException;
 import cl.telematic.business.UserManager;
 import cl.telematic.rest.domain.User;
@@ -26,7 +25,6 @@ import javax.annotation.Nonnull;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.mail.MessagingException;
 import javax.validation.Validator;
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -69,7 +67,7 @@ public class UserResourceImpl implements UserResource {
     }
 
     @Override
-    public User changePassword(@NotNull String currentPassword, @NotNull String newPassword) throws InvalidCredentialsException
+    public User changePassword(@NotNull String currentPassword, @NotNull String newPassword)
     {
         if (null == currentPassword || null == newPassword) {
             throw new InvalidCredentialsException("Current password and new password are required");
@@ -96,7 +94,7 @@ public class UserResourceImpl implements UserResource {
      * or with a map of fields, and related errors.
      */
     @Override
-    public User register(User user) throws EmailAleadyRegisteredException, MessagingException
+    public User register(User user)
     {
         return domainConverter.toRestDomain(userManager.register(domainConverter.toDBDomain(user)));
     }

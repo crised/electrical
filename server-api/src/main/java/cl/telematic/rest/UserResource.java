@@ -1,10 +1,7 @@
 package cl.telematic.rest;
 
-import cl.telematic.business.EmailAleadyRegisteredException;
-import cl.telematic.business.InvalidCredentialsException;
 import cl.telematic.rest.domain.User;
 
-import javax.mail.MessagingException;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
@@ -36,8 +33,7 @@ public interface UserResource {
     @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
     @POST
     @Path("/me/password")
-    User changePassword(@NotNull @FormParam("current") String currentPassword, @NotNull @FormParam("new") String newPassword)
-        throws InvalidCredentialsException;
+    User changePassword(@NotNull @FormParam("current") String currentPassword, @NotNull @FormParam("new") String newPassword);
 
     @POST
     @Path("/exists/{email}")
@@ -45,7 +41,7 @@ public interface UserResource {
 
     @POST
     @Path("/")
-    User register(@NotNull User user) throws EmailAleadyRegisteredException, MessagingException;
+    User register(@NotNull User user);
 
     @POST
     @Path("/{id}")

@@ -1,7 +1,7 @@
 package cl.telematic.rest;
 
-import cl.telematic.model.Device;
-import cl.telematic.model.DeviceStats;
+import cl.telematic.rest.domain.Device;
+import cl.telematic.rest.domain.DeviceStats;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;

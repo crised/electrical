@@ -18,12 +18,15 @@
         <div class="span12">
             <accordion close-others="false">
                 <accordion-group heading="Main statistics" is-open="true">
-                    Energy: <span class="badge">{{ stats.energy }} KWh</span><br/>
-                    Maximum Active Power for the Range: <span class="badge">{{ stats.activePowerTotal.max }} kW</span><br/>
-                    Maximum Active Power in between 18:00 - 23:00: <span class="badge">{{ stats.activePowerTotalMax18_23 }} kW</span><br/>
-                    Power Factor: <span class="badge">{{ stats.powerFactor }}</span>
+                    Voltage 1: <span class="badge">{{ stats.v1_voltage }}</span><br/>
+                    Voltage 2: <span class="badge">{{ stats.v2_voltage }}</span><br/>
+                    Voltage 3: <span class="badge">{{ stats.v3_voltage }}</span><br/>
+                    Power factor: <span class="badge">{{ stats.total_pf }}</span><br/>
+                    Instant power: <span class="badge">{{ stats.total_kw }}</span><br/>
+                    Maximum Active Power for the Range: <span class="badge">{{ stats.kwa_block_demand.max }}</span><br/>
+                    Maximum Active Power in between 18:00 - 23:00: <span class="badge">{{ stats.activePowerTotalMax18_23 }}</span><br/>
                 </accordion-group>
-                <accordion-group heading="Total Detail Accordion">
+                <accordion-group heading="Demand Values">
                     <table>
                         <thead>
                         <tr>
@@ -35,66 +38,44 @@
                         </thead>
                         <tbody>
                         <tr>
-                            <td>Reactive</td>
-                            <td><span class="badge">{{ stats.reactivePowerTotal.avg }}</span></td>
-                            <td><span class="badge">{{ stats.reactivePowerTotal.min }}</span></td>
-                            <td><span class="badge">{{ stats.reactivePowerTotal.max }}</span></td>
+                            <td>Active Total Power</td>
+                            <td><span class="badge">{{ stats.kw_import_block_demand.avg }}</span></td>
+                            <td><span class="badge">{{ stats.kw_import_block_demand.min }}</span></td>
+                            <td><span class="badge">{{ stats.kw_import_block_demand.max }}</span></td>
                         </tr>
                         <tr>
-                            <td>Active</td>
-                            <td><span class="badge">{{ stats.activePowerTotal.avg }}</span></td>
-                            <td><span class="badge">{{ stats.activePowerTotal.min }}</span></td>
-                            <td><span class="badge">{{ stats.activePowerTotal.max }}</span></td>
+                            <td>Reactive Total Power</td>
+                            <td><span class="badge">{{ stats.kvar_import_block_demand.avg }}</span></td>
+                            <td><span class="badge">{{ stats.kvar_import_block_demand.min }}</span></td>
+                            <td><span class="badge">{{ stats.kvar_import_block_demand.max }}</span></td>
                         </tr>
                         <tr>
-                            <td>Apparent total Power</td>
-                            <td><span class="badge">{{ stats.activePowerTotal.avg }}</span></td>
-                            <td><span class="badge">{{ stats.activePowerTotal.min }}</span></td>
-                            <td><span class="badge">{{ stats.activePowerTotal.max }}</span></td>
+                            <td>Apparent Total Power</td>
+                            <td><span class="badge">{{ stats.kva_block_demand.avg }}</span></td>
+                            <td><span class="badge">{{ stats.kva_block_demand.min }}</span></td>
+                            <td><span class="badge">{{ stats.kva_block_demand.max }}</span></td>
                         </tr>
                         </tbody>
                     </table>
                 </accordion-group>
-                <accordion-group heading="Table">
-                    <div class="btn-group" data-toggle="buttons-radio">
-                        <button type="button" class="btn btn-primary" ng-class="{'active':isStatTypeAVG()}" ng-click="selectStatTypeAVG()">AVG</button>
-                        <button type="button" class="btn btn-primary" ng-class="{'active':isStatTypeMIN()}" ng-click="selectStatTypeMIN()">MIN</button>
-                        <button type="button" class="btn btn-primary" ng-class="{'active':isStatTypeMAX()}" ng-click="selectStatTypeMAX()">MAX</button>
-                    </div>
-                    <div class="btn-group" data-toggle="buttons-radio">
-                        <button type="button" class="btn btn-primary" ng-class="{'active':isPhase(1)}" ng-click="selectPhase(1)">Phase 1</button>
-                        <button type="button" class="btn btn-primary" ng-class="{'active':isPhase(2)}" ng-click="selectPhase(2)">Phase 2</button>
-                        <button type="button" class="btn btn-primary" ng-class="{'active':isPhase(3)}" ng-click="selectPhase(3)">Phase 3</button>
-                    </div>
+                <accordion-group heading="Energy Values">
                     <table>
                         <tbody>
                         <tr>
-                            <td>Voltage</td>
-                            <td><span class="badge">{{ getVoltage() }}</span></td>
+                            <td>Total Energy</td>
+                            <td><span class="badge">{{ stats.kwh_import }}</span></td>
                         </tr>
                         <tr>
-                            <td>Current</td>
-                            <td><span class="badge">{{ getCurrent() }}</span></td>
+                            <td>Energy Line 1</td>
+                            <td><span class="badge">{{ stats.kwh_import_l1 }}</span></td>
                         </tr>
                         <tr>
-                            <td>Active Power</td>
-                            <td><span class="badge">{{ getActivePower() }}</span></td>
+                            <td>Energy Line 2</td>
+                            <td><span class="badge">{{ stats.kwh_import_l2 }}</span></td>
                         </tr>
                         <tr>
-                            <td>Reactive Power</td>
-                            <td><span class="badge">{{ getReactivePower() }}</span></td>
-                        </tr>
-                        <tr>
-                            <td>Apparent Power</td>
-                            <td><span class="badge">{{ getApparentPower() }}</span></td>
-                        </tr>
-                        <tr>
-                            <td>Power Factor</td>
-                            <td><span class="badge">{{ getPowerFactor() }}</span></td>
-                        </tr>
-                        <tr>
-                            <td>Frequency</td>
-                            <td><span class="badge">{{ getFrequency() }}</span></td>
+                            <td>Energy Line 3</td>
+                            <td><span class="badge">{{ stats.kwh_import_l3 }}</span></td>
                         </tr>
                         </tbody>
                     </table>

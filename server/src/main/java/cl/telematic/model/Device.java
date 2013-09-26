@@ -14,7 +14,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 
 @Entity
-@XmlRootElement
 @Table(name = "DEVICE")
 public class Device implements Serializable {
 

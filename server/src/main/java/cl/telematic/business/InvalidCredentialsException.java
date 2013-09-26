@@ -3,7 +3,7 @@ package cl.telematic.business;
 import javax.ejb.ApplicationException;
 
 @ApplicationException(rollback = true)
-public class InvalidCredentialsException extends Exception {
+public class InvalidCredentialsException extends RuntimeException {
 
     public InvalidCredentialsException(String msg)
     {
