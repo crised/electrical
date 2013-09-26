@@ -1,4 +1,3 @@
-First roll for the modbus->DB daemon.
 
 
 Prerequisites:
@@ -53,7 +52,7 @@ CREATE SEQUENCE id_sequence;
 
 CREATE TABLE instant
 (
-  id bigint NOT NULL,
+  id bigint DEFAULT nextval('id_sequence') NOT NULL,
   datetime timestamp DEFAULT now(),
   sent boolean DEFAULT 'false',
   v1_voltage bigint,
@@ -66,7 +65,7 @@ CREATE TABLE instant
 
 CREATE TABLE demand
 (
-  id bigint NOT NULL,
+  id bigint DEFAULT nextval('id_sequence') NOT NULL,
   datetime timestamp DEFAULT now(),
   sent boolean DEFAULT 'false',
   kw_import_block_demand bigint,
@@ -77,7 +76,7 @@ CREATE TABLE demand
 
 CREATE TABLE energy
 (
-  id bigint NOT NULL,
+  id bigint DEFAULT nextval('id_sequence') NOT NULL,
   datetime timestamp DEFAULT now(),
   sent boolean DEFAULT 'false',
   kwh_import bigint,
