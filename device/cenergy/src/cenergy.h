@@ -26,6 +26,16 @@ enum E_VALUES_RECORD
 #define MAX_MODBUS_RETRIES      (5)
 #define MAX_MODBUS_READ_SIZE    (10)
 #define INCREASE_MODBUS_TIMEOUT (0)
+#define MODBUS_ERROR_WAIT_TIME  (60)
+
+#define WATCHDOG_TIMEOUT (10)
+
+#define SERIAL_BAUDRATE   (9600)
+#define SERIAL_PARITY     ('N')
+#define SERIAL_DATA_BITS  (8)
+#define SERIAL_STOP_BITS  (1)
+
+#define PSQL_CONNECTION_STR ("dbname = cenergy user = electrical password = electrical")
 
 typedef struct METER_REGISTER
 {

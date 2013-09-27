@@ -164,7 +164,7 @@ void *watch_dog(void *threadarg)
     if (watch_counter > 1)
     {
       SYSLOG("Warning,  watchdog value is %d\n", watch_counter);
-      if (watch_counter > 10)
+      if (watch_counter > WATCHDOG_TIMEOUT)
       {
         SYSLOG("Watchdog error\n");
         exit_nicely(psql_connection);
@@ -176,6 +176,52 @@ void *watch_dog(void *threadarg)
   return NULL;
 }
 
+void cleanup_modbus(modbus_t** pctx)
+{
+  modbus_flush(*pctx);
+  modbus_close(*pctx);
+  modbus_free(*pctx);
+  *pctx = NULL;
+}
+
+int setup_modbus(const char* port, modbus_t** pctx)
+{
+  int result = 1;
+
+  *pctx = modbus_new_rtu(port, SERIAL_BAUDRATE, SERIAL_PARITY, SERIAL_DATA_BITS, SERIAL_STOP_BITS);
+  if (*pctx == NULL)
+  {
+    SYSLOG("Unable to create the libmodbus context\n");
+    result = 0;
+  }
+  if (modbus_connect(*pctx) == -1)
+  {
+    SYSLOG("Modbus_connect failed on port %s\n", port);
+    result = 0;
+  }
+  if (modbus_set_slave(*pctx, 1) == -1)
+  {
+    SYSLOG("Modbus_connect failed on port %s\n", port);
+    result = 0;
+  }
+
+#if INCREASE_MODBUS_TIMEOUT
+  {
+    struct timeval response_timeout;
+    response_timeout.tv_sec = INCREASE_MODBUS_TIMEOUT;
+    response_timeout.tv_usec = 0;
+    modbus_set_response_timeout(*pctx, &response_timeout);
+  }
+#endif
+
+  if (!result)
+  {
+    cleanup_modbus(pctx);
+  }
+
+  return result;
+}
+
 
 static void signal_handler(int signal)
 {
@@ -185,9 +231,7 @@ static void signal_handler(int signal)
   }
   if (ctx)
   {
-    modbus_flush(ctx);
-    modbus_close(ctx);
-    modbus_free(ctx);
+    cleanup_modbus(&ctx);
   }
   exit(EXIT_SUCCESS);
 }
@@ -196,8 +240,7 @@ int main(int argc, char** argv)
 {
 
   unsigned long long counter = 0;
-  const char* psql_conninfo = "dbname = cenergy user = electrical password = electrical";
-
+  int result = EXIT_SUCCESS;
   openlog(argv[0], LOG_CONS | LOG_PID, LOG_LOCAL1);
   setlogmask(LOG_UPTO(LOG_NOTICE));
 
@@ -215,36 +258,12 @@ int main(int argc, char** argv)
     return EXIT_FAILURE;
   }
 
-  ctx = modbus_new_rtu(argv[1], 9600, 'N', 8,1);
-  if (ctx == NULL)
+  if (!setup_modbus(argv[1], &ctx))
   {
-    SYSLOG("Unable to create the libmodbus context\n");
-    return EXIT_FAILURE;
-  }
-  if (modbus_connect(ctx) == -1)
-  {
-    modbus_free(ctx);
-    SYSLOG("Modbus_connect failed on port %s\n", argv[1]);
-    return EXIT_FAILURE;
-  }
-  if (modbus_set_slave(ctx, 1) == -1)
-  {
-    modbus_free(ctx);
-    SYSLOG("Modbus_connect failed on port %s\n", argv[1]);
     return EXIT_FAILURE;
   }
 
-#if INCREASE_MODBUS_TIMEOUT
-  {
-    struct timeval response_timeout;
-    response_timeout.tv_sec = INCREASE_MODBUS_TIMEOUT;
-    response_timeout.tv_usec = 0;
-    modbus_set_response_timeout(ctx, &response_timeout);
-  }
-#endif
-
-
-  psql_connection = PQconnectdb(psql_conninfo);
+  psql_connection = PQconnectdb(PSQL_CONNECTION_STR);
   if (PQstatus(psql_connection) != CONNECTION_OK)
   {
     SYSLOG("Connection to database failed: %s\n",
@@ -265,18 +284,20 @@ int main(int argc, char** argv)
   while (1)
   {
     uint32_t values[METER_REGISTER_MAX_SIZE];
+    int modbus_failed = 0;
+    int psql_failed = 0;
 
     if (counter % INSTANT_VALUES_INTERVAL == 0)
     {
       if (!read_from_Modbus(ctx, values, E_INSTANT_VALUES_RECORD))
       {
         SYSLOG("read_from_Modbus failed\n");
-        break;
+        modbus_failed = 1;
       }
       if (!write_to_DB(psql_connection, values, E_INSTANT_VALUES_RECORD))
       {
         SYSLOG("write_to_DB failed\n");
-        break;
+        psql_failed = 1;
       }
     }
     if (counter % DEMAND_VALUES_INTERVAL == 0)
@@ -284,12 +305,12 @@ int main(int argc, char** argv)
       if (!read_from_Modbus(ctx, values, E_DEMAND_VALUES_RECORD))
       {
         SYSLOG("read_from_Modbus failed\n");
-        break;
+        modbus_failed = 1;
       }
       if (!write_to_DB(psql_connection, values, E_DEMAND_VALUES_RECORD))
       {
         SYSLOG("write_to_DB failed\n");
-        break;
+        psql_failed = 1;
       }
     }
     if (counter % ENERGY_VALUES_INTERVAL == 0)
@@ -297,14 +318,53 @@ int main(int argc, char** argv)
       if (!read_from_Modbus(ctx, values, E_ENERGY_VALUES_RECORD))
       {
         SYSLOG("read_from_Modbus failed\n");
-        break;
+        modbus_failed = 1;
       }
       if (!write_to_DB(psql_connection, values, E_ENERGY_VALUES_RECORD))
       {
         SYSLOG("write_to_DB failed\n");
-        break;
+        psql_failed = 1;
       }
     }
+
+    if (psql_failed)
+    {
+      result = EXIT_FAILURE;
+      break;
+    }
+
+    //retry modbus
+    if (modbus_failed)
+    {
+      cleanup_modbus(&ctx);
+      if (setup_modbus(argv[1], &ctx))
+      {
+        SYSLOG("Modbus reconnection succeeded\n");
+        modbus_failed = 0;
+      }
+      else
+      {
+        //retry until success
+        while (1)
+        {
+          uint32_t wait_counter = MODBUS_ERROR_WAIT_TIME;
+          SYSLOG("Modbus reconnection failed, retrying...\n");
+          //wait some
+          while (wait_counter--)
+          {
+            usleep(500*1000);
+            ping_watchdog();
+            usleep(500*1000);
+          }
+          if (setup_modbus(argv[1], &ctx))
+          {
+            SYSLOG("Modbus reconnection succeeded\n");
+            break;
+          }
+        }
+      }
+    }
+
 
     //sleep until next full second;
     {
@@ -317,9 +377,7 @@ int main(int argc, char** argv)
   }
 
   PQfinish(psql_connection);
-  modbus_flush(ctx);
-  modbus_close(ctx);
-  modbus_free(ctx);
+  cleanup_modbus(&ctx);
 
-  return EXIT_SUCCESS;
+  return result;
 }
