@@ -4,8 +4,8 @@ import cl.telematic.dao.StatsDAO;
 import cl.telematic.model.DemandStats;
 import cl.telematic.model.Device;
 import cl.telematic.model.EnergyStats;
-import cl.telematic.rest.domain.InstantStats;
 import cl.telematic.rest.domain.DeviceStats;
+import cl.telematic.rest.domain.InstantStats;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -49,7 +49,11 @@ public class StatsManager {
     {
 //        Check if device exists
         deviceManager.getDevice(deviceId);
-        return statsDAO.save(deviceId,stats);
+        InstantStats cachedEntry = statsDAO.findInstantStats(deviceId);
+        if (cachedEntry != null && cachedEntry.getCreatedOn().after(stats.getCreatedOn())) {
+            return cachedEntry;
+        }
+        return statsDAO.save(deviceId, stats);
     }
 
     @Nonnull

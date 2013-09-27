@@ -168,7 +168,6 @@ public class Database {
     private Connection getConnection() throws SQLException
     {
         if (null == connection) {
-//            TODO we should read db access data from properties file
             String username = "electrical";
             String password = "electrical";
             String dbURL = "jdbc:postgresql://127.0.0.1:5432/electrical_device";
@@ -205,8 +204,8 @@ public class Database {
     private PreparedStatement getSelectDemandStatsStatement() throws SQLException
     {
         if (null == selectDemandStatsStatement) {
-            selectDemandStatsStatement = getConnection().prepareStatement(
-                "SELECT id,datetime,kw_import_block_demand,kvar_import_block_demand,kva_block_demand FROM demand WHERE sent=FALSE");
+            final String sql = "SELECT id,datetime,kw_import_block_demand,kvar_import_block_demand,kva_block_demand FROM demand WHERE sent=FALSE order by datetime asc";
+            selectDemandStatsStatement = getConnection().prepareStatement(sql);
         }
         return selectDemandStatsStatement;
     }
@@ -214,8 +213,8 @@ public class Database {
     private PreparedStatement getSelectEnergyStatsStatement() throws SQLException
     {
         if (null == selectEnergyStatsStatement) {
-            selectEnergyStatsStatement = getConnection().prepareStatement(
-                "SELECT id,datetime,kwh_import,kwh_import_l1,kwh_import_l2,kwh_import_l3 FROM energy WHERE sent=FALSE");
+            final String sql = "SELECT id,datetime,kwh_import,kwh_import_l1,kwh_import_l2,kwh_import_l3 FROM energy WHERE sent=FALSE order by datetime asc";
+            selectEnergyStatsStatement = getConnection().prepareStatement(sql);
         }
         return selectEnergyStatsStatement;
     }
@@ -223,8 +222,8 @@ public class Database {
     private PreparedStatement getSelectInstantStatsStatement() throws SQLException
     {
         if (null == selectInstantStatsStatement) {
-            selectInstantStatsStatement = getConnection().prepareStatement(
-                "SELECT id,datetime,total_kw,total_pf,v1_voltage,v2_voltage,v3_voltage FROM instant WHERE sent=FALSE");
+            final String sql = "SELECT id,datetime,total_kw,total_pf,v1_voltage,v2_voltage,v3_voltage FROM instant WHERE sent=FALSE order by datetime asc";
+            selectInstantStatsStatement = getConnection().prepareStatement(sql);
         }
         return selectInstantStatsStatement;
     }

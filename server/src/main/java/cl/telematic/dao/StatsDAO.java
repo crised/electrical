@@ -69,10 +69,16 @@ public class StatsDAO {
         return toDeviceStats(device, result, energyStatsA, energyStatsB, activePowerTotalMax18_23);
     }
 
+    @Nullable
+    public InstantStats findInstantStats(@Nonnull Long deviceId)
+    {
+        return cacheManager.getInstantStats(deviceId);
+    }
+
     @Nonnull
     public InstantStats save(@Nonnull Long deviceId, @Nonnull InstantStats stats)
     {
-        cacheManager.putInstantStats(deviceId,stats);
+        cacheManager.putInstantStats(deviceId, stats);
         return stats;
     }
 
