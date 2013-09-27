@@ -4,15 +4,12 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Path;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-@XmlRootElement
 public class ValidationError {
 
-    @XmlElement
     private List<ConstraintViolationWrap> constraintViolations;
 
     /**
