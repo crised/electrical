@@ -58,3 +58,38 @@ And the device entity  may have 2 Strings, like Name and Description.
 Link to the docs:
 https://docs.google.com/document/d/1LruXabD3js1uMHJbjtgtn_96fUXqv3CeVnnnc7lMAeA/edit?usp=sharing
 
+Security
+---
+
+Almost all actions require user to be authenticated.
+Role based security constraints are defined only on business layer using standard JEE annotations.
+
+Basic authentication is used and it's triggered programatically by BasicAuthenticationFilter which in turn delegates authentication to JEE container.
+Container should have "Electircal" security domain configured.
+For development purposes AS7 config may look like this:
+
+    <security-domain name="Electrical" cache-type="default">
+        <authentication>
+            <login-module code="org.jboss.security.auth.spi.SimpleServerLoginModule" flag="required"/>
+        </authentication>
+    </security-domain>
+
+With such configuration one must provide password same as username to get authenticated.
+
+For production configuration like this would be required:
+
+    <security-domain name="Electrical" cache-type="default">
+        <authentication>
+           <login-module code="Database" flag="optional">
+                <module-option name="dsJndiName" value="java:jboss/datasources/ElectricalDS"/>
+                <module-option name="principalsQuery" value="select password from users where email=?"/>
+                <module-option name="rolesQuery" value="select role,'Roles' from users where email=?"/>
+                <module-option name="hashAlgorithm" value="SHA-512"/>
+                <module-option name="hashEncoding" value="hex"/>
+                <module-option name="password-stacking" value="true"/>
+            </login-module>
+        </authentication>
+    </security-domain>
+
+Container does not require any requests to be authenticated. In order to authenticate user the REST method must be annotated with @Authenticated,
+our custom annotation that triggers BasicAuthenticationFilter.

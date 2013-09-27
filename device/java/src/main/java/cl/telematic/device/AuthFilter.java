@@ -12,7 +12,7 @@ public class AuthFilter implements ClientRequestFilter {
     public void filter(ClientRequestContext requestContext) throws IOException
     {
         final String username = "device";
-        final String password = "device";
+        final String password = "ecived";
         String encodedCredentials = Base64.encodeBytes((username + ":" + password).getBytes());
         requestContext.getHeaders().putSingle("Authorization", "Basic " + encodedCredentials);
     }

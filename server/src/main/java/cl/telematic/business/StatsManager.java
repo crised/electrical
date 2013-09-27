@@ -6,9 +6,11 @@ import cl.telematic.model.Device;
 import cl.telematic.model.EnergyStats;
 import cl.telematic.rest.domain.DeviceStats;
 import cl.telematic.rest.domain.InstantStats;
+import cl.telematic.security.Roles;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.security.RolesAllowed;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -31,6 +33,7 @@ public class StatsManager {
     @Inject
     private Validator validator;
 
+    @RolesAllowed(Roles.USER)
     @Nullable
     public DeviceStats getDeviceStats(@Nonnull Long id, @Nonnull Date start, @Nonnull Date end)
     {
@@ -44,6 +47,7 @@ public class StatsManager {
         return statsDAO.getStats(device, start, end);
     }
 
+    @RolesAllowed(Roles.DEVICE)
     @Nonnull
     public InstantStats save(@Nonnull Long deviceId, @Nonnull InstantStats stats)
     {
@@ -56,6 +60,7 @@ public class StatsManager {
         return statsDAO.save(deviceId, stats);
     }
 
+    @RolesAllowed(Roles.DEVICE)
     @Nonnull
     public EnergyStats save(@Nonnull Long deviceId, @Nonnull EnergyStats stats)
     {
@@ -64,6 +69,7 @@ public class StatsManager {
         return statsDAO.save(stats);
     }
 
+    @RolesAllowed(Roles.DEVICE)
     @Nonnull
     public DemandStats save(@Nonnull Long deviceId, @Nonnull DemandStats stats)
     {

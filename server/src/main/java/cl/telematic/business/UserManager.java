@@ -36,7 +36,7 @@ public class UserManager {
     @EJB
     private UserDAO userDAO;
 
-    //    @RolesAllowed(Roles.ADMIN)
+    @RolesAllowed(Roles.ADMIN)
     @Nonnull
     public List<User> getAllUsersOrderedByName()
     {
@@ -66,7 +66,7 @@ public class UserManager {
         return user;
     }
 
-    //    @RolesAllowed(Roles.ADMIN)
+    @RolesAllowed(Roles.ADMIN)
     @Nonnull
     public User get(@Nonnull Long id)
     {
@@ -85,7 +85,7 @@ public class UserManager {
     {
         final String email = user.getEmail();
         if (null == userDAO.findByEmail(email)) {
-            user.setRole(UserRole.USER);
+            user.getRoles().add(UserRole.USER);
             final String password = RandomStringUtils.randomAlphanumeric(6);
             user.setPassword(hashPassword(password));
             try {

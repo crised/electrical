@@ -4,6 +4,7 @@ import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -15,6 +16,8 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "USERS")
@@ -50,8 +53,8 @@ public class User implements Serializable {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "ROLE", length = 255, nullable = false)
-    private UserRole role;
+    @ElementCollection
+    private List<UserRole> roles;
 
     public String getEmail()
     {
@@ -103,14 +106,12 @@ public class User implements Serializable {
         this.phoneNumber = phoneNumber;
     }
 
-    public UserRole getRole()
+    public List<UserRole> getRoles()
     {
-        return role;
-    }
-
-    public void setRole(UserRole role)
-    {
-        this.role = role;
+        if (null == roles) {
+            roles = new ArrayList<UserRole>();
+        }
+        return roles;
     }
 
     @Override

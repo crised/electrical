@@ -44,6 +44,7 @@ public class DeviceResourceImpl implements DeviceResource {
         return domainConverter.toRestDeviceList(deviceManager.getMyDevices());
     }
 
+    @Authenticated
     @Override
     public Response ping(@Nonnull Long id)
     {

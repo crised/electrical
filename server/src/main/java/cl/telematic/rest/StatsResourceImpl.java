@@ -1,9 +1,10 @@
 package cl.telematic.rest;
 
 import cl.telematic.business.StatsManager;
-import cl.telematic.rest.domain.InstantStats;
 import cl.telematic.rest.domain.DemandStats;
 import cl.telematic.rest.domain.EnergyStats;
+import cl.telematic.rest.domain.InstantStats;
+import cl.telematic.security.Authenticated;
 
 import javax.annotation.Nonnull;
 import javax.ejb.EJB;
@@ -19,6 +20,7 @@ public class StatsResourceImpl implements StatsResource {
     @EJB
     private StatsManager statsManager;
 
+    @Authenticated
     @Override
     public Response save(@Nonnull Long deviceId, @Nonnull InstantStats stats)
     {
@@ -26,6 +28,7 @@ public class StatsResourceImpl implements StatsResource {
         return Response.ok().build();
     }
 
+    @Authenticated
     @Override
     public Response save(@Nonnull Long deviceId, @Nonnull DemandStats stats)
     {
@@ -33,6 +36,7 @@ public class StatsResourceImpl implements StatsResource {
         return Response.ok().build();
     }
 
+    @Authenticated
     @Override
     public Response save(@Nonnull Long deviceId, @Nonnull EnergyStats stats)
     {

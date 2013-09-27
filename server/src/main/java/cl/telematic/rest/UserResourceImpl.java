@@ -1,19 +1,3 @@
-/*
- * JBoss, Home of Professional Open Source
- * Copyright 2013, Red Hat, Inc. and/or its affiliates, and individual
- * contributors by the @authors tag. See the copyright.txt in the
- * distribution for a full listing of individual contributors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package cl.telematic.rest;
 
 import cl.telematic.business.InvalidCredentialsException;
@@ -66,6 +50,7 @@ public class UserResourceImpl implements UserResource {
         return domainConverter.toRestDomain(userManager.get(id));
     }
 
+    @Authenticated
     @Override
     public User changePassword(@NotNull String currentPassword, @NotNull String newPassword)
     {
@@ -93,12 +78,14 @@ public class UserResourceImpl implements UserResource {
      * Creates a new user from the values provided. Performs validation, and will return a JAX-RS response with either 200 ok,
      * or with a map of fields, and related errors.
      */
+    @Authenticated
     @Override
     public User register(User user)
     {
         return domainConverter.toRestDomain(userManager.register(domainConverter.toDBDomain(user)));
     }
 
+    @Authenticated
     @Override
     public User update(@Nonnull Long id, @Nonnull User user)
     {
