@@ -5,12 +5,28 @@ import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 
 import javax.ws.rs.client.Client;
+import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.SQLException;
+import java.util.Iterator;
 import java.util.List;
 
 public class Main {
 
-    public static void main(String[] args)
+    private static void handleResponse(String stasName, Response response, Iterator<?> iterator)
+    {
+        if (Response.Status.OK.getStatusCode() != response.getStatus()) {
+            System.err.println("Cannot send " + stasName + " stats. Response code:" + response.getStatusInfo());
+            if (response.hasEntity()) {
+                System.err.println(response.readEntity(String.class));
+            }
+            iterator.remove();
+        }
+        response.close();
+    }
+
+    public static void main(String[] args) throws URISyntaxException
     {
         if (args.length < 2) {
             System.err.println("Usage:");
@@ -18,52 +34,49 @@ public class Main {
             System.err.println("\n\ti.e. java -cp ... -jar " + Main.class.getCanonicalName() + " 1 http://localhost:8080/electricmeter/rest");
         }
         final Long deviceId = Long.parseLong(args[0]);
-        final String restApiBaseURL = args[1];
+        final URI restApiBaseURL = new URI(args[1]);
         Client client = ResteasyClientBuilder.newClient();
+        client.register(AuthFilter.class);
         ResteasyWebTarget webTarget = (ResteasyWebTarget) client.target(restApiBaseURL);
         final StatsResource statsResource = webTarget.proxy(StatsResource.class);
 
         final Database database = new Database();
-        final Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run()
-            {
-                //noinspection InfiniteLoopStatement
-                do {
-                    System.out.println("Checking db...");
-                    try {
-                        sendDemandStats(database, statsResource, deviceId);
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
-                    try {
-                        sendEnergyStats(database, statsResource, deviceId);
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
-                    try {
-                        sendInstantStats(database, statsResource, deviceId);
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
-                    System.out.println("...done. Sleeping.");
-//                    Wait for 1 minute
-                    try {
-                        Thread.sleep(1000 * 60);
-                    } catch (InterruptedException ignore) {
-//                        We've been interrupted, no problem
-                    }
-                } while (true);
+
+        //noinspection InfiniteLoopStatement
+        do {
+            System.out.println("Checking db...");
+            try {
+                sendDemandStats(database, statsResource, deviceId);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
-        });
-        thread.start();
+            try {
+                sendEnergyStats(database, statsResource, deviceId);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            try {
+                sendInstantStats(database, statsResource, deviceId);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            System.out.println("...done. Sleeping.");
+//                    Wait for 1 minute
+            try {
+                Thread.sleep(1000 * 60);
+            } catch (InterruptedException ignore) {
+//                        We've been interrupted, no problem
+            }
+        } while (true);
     }
 
     private static void sendDemandStats(Database database, StatsResource statsResource, Long deviceId) throws SQLException
     {
         List<LocalDemandStats> statses = database.getDemandStats();
-        for (LocalDemandStats stats : statses) {
-            statsResource.save(deviceId, stats).close();
+        for (Iterator<LocalDemandStats> iterator = statses.iterator(); iterator.hasNext(); ) {
+            LocalDemandStats stats = iterator.next();
+            final Response response = statsResource.save(deviceId, stats);
+            handleResponse("demand", response, iterator);
         }
         System.out.println("Sent " + statses.size() + " demand records");
         database.removeDemandStats(statses);
@@ -72,8 +85,10 @@ public class Main {
     private static void sendEnergyStats(Database database, StatsResource statsResource, Long deviceId) throws SQLException
     {
         List<LocalEnergyStats> statses = database.getEnergyStats();
-        for (LocalEnergyStats stats : statses) {
-            statsResource.save(deviceId, stats).close();
+        for (Iterator<LocalEnergyStats> iterator = statses.iterator(); iterator.hasNext(); ) {
+            LocalEnergyStats stats = iterator.next();
+            final Response response = statsResource.save(deviceId, stats);
+            handleResponse("energy", response, iterator);
         }
         System.out.println("Sent " + statses.size() + " energy records");
         database.removeEnergyStats(statses);
@@ -82,8 +97,10 @@ public class Main {
     private static void sendInstantStats(Database database, StatsResource statsResource, Long deviceId) throws SQLException
     {
         List<LocalInstantStats> statses = database.getInstantStats();
-        for (LocalInstantStats stats : statses) {
-            statsResource.save(deviceId, stats).close();
+        for (Iterator<LocalInstantStats> iterator = statses.iterator(); iterator.hasNext(); ) {
+            LocalInstantStats stats = iterator.next();
+            final Response response = statsResource.save(deviceId, stats);
+            handleResponse("instant", response, iterator);
         }
         System.out.println("Sent " + statses.size() + " instant records");
         database.removeInstantStats(statses);
