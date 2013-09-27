@@ -19,10 +19,24 @@ gcc -I./lib/ -lpq -o "cenergy" ./src/cenergy.c ./lib/libmodbus.a
 
 Quick start for the database:
 
-1. create a postgresql user - easier if you choose same username ar current linux username:
+1. create a postgresql user:
 sudo su - postgres
-createuser
-input all prompted data then exit
+createuser electrical -P
+input all prompted data then exit (use password "electrical")
+
+if identification fails in the connect stage the you might need to edit 
+/var/lib/pgsql/data/pg_hba.conf file, change the METHOD from ident to 
+password as below:
+
+# TYPE  DATABASE    USER        CIDR-ADDRESS          METHOD
+
+# "local" is for Unix domain socket connections only
+local   all         all                               password
+# IPv4 local connections:
+host    all         all         127.0.0.1/32          password
+# IPv6 local connections:
+host    all         all         ::1/128               ident
+
 
 
 2.create the database and the table:

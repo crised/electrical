@@ -16,9 +16,8 @@
 #include <string.h>
 #include <signal.h>
 #include <syslog.h>
+#include <pthread.h>
 
-
-METER_REGISTER mt[] = INSTANT_VALUES_METER_REGISTERS;
 
 
 static void exit_nicely(PGconn *conn)
@@ -86,7 +85,7 @@ int write_to_DB(PGconn* connection, uint32_t* values, enum E_VALUES_RECORD type)
   //build query format string
   //header
   sprintf(command,
-      "INSERT INTO %s VALUES (DEFAULT, DEFAULT, ",
+      "INSERT INTO %s VALUES (DEFAULT, DEFAULT, DEFAULT, ",
       table_names[type]
       );
   pc = &command[strlen(command) - 1];
@@ -133,30 +132,71 @@ int write_to_DB(PGconn* connection, uint32_t* values, enum E_VALUES_RECORD type)
 
 PGconn*     psql_connection = NULL;
 modbus_t*   ctx = NULL;
+volatile unsigned int watch_counter = 0;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_t watchdog_thread;
+
+void ping_watchdog()
+{
+  int rl = pthread_mutex_trylock(&mutex);
+  if (rl)
+  {
+    SYSLOG("Failed to lock mutex with error %d\n", rl);
+  }
+  watch_counter = 0;
+  pthread_mutex_unlock(&mutex);
+}
+
+void *watch_dog(void *threadarg)
+{
+  int rl;
+  while (1)
+  {
+    sleep(1);
+    rl = pthread_mutex_trylock(&mutex);
+    if (rl)
+    {
+      SYSLOG("Failed to lock mutex with error %d\n", rl);
+    }
+
+    watch_counter++;
+
+    if (watch_counter > 1)
+    {
+      SYSLOG("Warning,  watchdog value is %d\n", watch_counter);
+      if (watch_counter > 10)
+      {
+        SYSLOG("Watchdog error\n");
+        exit_nicely(psql_connection);
+      }
+    }
+
+    pthread_mutex_unlock(&mutex);
+  }
+  return NULL;
+}
+
 
 static void signal_handler(int signal)
 {
-  if (signal == SIGTERM)
+  if (psql_connection)
   {
-    if (psql_connection)
-    {
-      PQfinish(psql_connection);
-    }
-    if (ctx)
-    {
-      modbus_flush(ctx);
-      modbus_close(ctx);
-      modbus_free(ctx);
-    }
-    exit(EXIT_SUCCESS);
+    PQfinish(psql_connection);
   }
+  if (ctx)
+  {
+    modbus_flush(ctx);
+    modbus_close(ctx);
+    modbus_free(ctx);
+  }
+  exit(EXIT_SUCCESS);
 }
 
 int main(int argc, char** argv)
 {
 
-  const char* psql_conninfo = "dbname = cenergy";
   unsigned long long counter = 0;
+  const char* psql_conninfo = "dbname = cenergy user = electrical password = electrical";
 
   openlog(argv[0], LOG_CONS | LOG_PID, LOG_LOCAL1);
   setlogmask(LOG_UPTO(LOG_NOTICE));
@@ -167,7 +207,9 @@ int main(int argc, char** argv)
     return EXIT_FAILURE;
   }
 
-  if (signal(SIGTERM, signal_handler) == SIG_ERR)
+  if (signal(SIGINT, signal_handler) == SIG_ERR
+    ||signal(SIGTERM, signal_handler) == SIG_ERR
+    ||signal(SIGQUIT, signal_handler) == SIG_ERR)
   {
     SYSLOG("An error occurred while setting a signal handler.\n");
     return EXIT_FAILURE;
@@ -210,6 +252,15 @@ int main(int argc, char** argv)
     exit_nicely(psql_connection);
   }
 
+  //start watchdog thread
+  {
+    int rc = pthread_create(&watchdog_thread, NULL, watch_dog, NULL);
+    if (rc)
+    {
+      SYSLOG("Failed to create thread with error %d\n", rc);
+      exit_nicely(psql_connection);
+    }
+  }
 
   while (1)
   {
@@ -255,8 +306,14 @@ int main(int argc, char** argv)
       }
     }
 
-    sleep(1);
+    //sleep until next full second;
+    {
+      struct timespec tp;
+      clock_gettime(CLOCK_REALTIME, &tp);
+      usleep((1000000000 - tp.tv_nsec % 1000000000) / 1000);
+    }
     counter++;
+    ping_watchdog();
   }
 
   PQfinish(psql_connection);
