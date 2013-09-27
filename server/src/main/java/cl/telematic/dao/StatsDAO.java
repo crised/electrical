@@ -70,9 +70,10 @@ public class StatsDAO {
     }
 
     @Nonnull
-    public InstantStats save(@Nonnull InstantStats stats)
+    public InstantStats save(@Nonnull Long deviceId, @Nonnull InstantStats stats)
     {
-        return entityManager.merge(stats);
+        cacheManager.putInstantStats(deviceId,stats);
+        return stats;
     }
 
     @Nonnull
@@ -134,7 +135,7 @@ public class StatsDAO {
         deviceStats.setDeviceName(device.getName());
         deviceStats.setActivePowerTotalMax18_23(activePowerTotalMax18_23);
 
-        final InstantStats instantStats = cacheManager.getActiveEnergyStats(device.getId());
+        final InstantStats instantStats = cacheManager.getInstantStats(device.getId());
 
         if (null != instantStats) {
             deviceStats.setTotal_kw(instantStats.getTotal_kw());

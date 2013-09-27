@@ -27,6 +27,7 @@ public class DomainConverter {
     public cl.telematic.model.DemandStats toDBDomain(DemandStats rest)
     {
         final cl.telematic.model.DemandStats db = new cl.telematic.model.DemandStats();
+        db.setCreatedOn(rest.getCreatedOn());
         db.setKva_block_demand(rest.getKva_block_demand());
         db.setKvar_import_block_demand(rest.getKvar_import_block_demand());
         db.setKw_import_block_demand(rest.getKw_import_block_demand());
@@ -36,6 +37,7 @@ public class DomainConverter {
     public cl.telematic.model.EnergyStats toDBDomain(EnergyStats rest)
     {
         final cl.telematic.model.EnergyStats db = new cl.telematic.model.EnergyStats();
+        db.setCreatedOn(rest.getCreatedOn());
         db.setKwh_import(rest.getKwh_import());
         db.setKwh_import_l1(rest.getKwh_import_l1());
         db.setKwh_import_l2(rest.getKwh_import_l2());

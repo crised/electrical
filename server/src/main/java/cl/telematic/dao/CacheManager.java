@@ -10,16 +10,16 @@ import java.util.Map;
 @Singleton
 public class CacheManager {
 
-    private final Map<Long, InstantStats> activeEnergyStatsCache = new HashMap<Long, InstantStats>();
+    private final Map<Long, InstantStats> instantStatsCache = new HashMap<Long, InstantStats>();
 
     @Nullable
-    public InstantStats getActiveEnergyStats(@Nullable Long deviceId)
+    public InstantStats getInstantStats(@Nullable Long deviceId)
     {
-        return activeEnergyStatsCache.get(deviceId);
+        return instantStatsCache.get(deviceId);
     }
 
-    public void putActiveEnergyStats(@Nullable Long deviceId, @Nullable InstantStats stats)
+    public void putInstantStats(@Nullable Long deviceId, @Nullable InstantStats stats)
     {
-        activeEnergyStatsCache.put(deviceId, stats);
+        instantStatsCache.put(deviceId, stats);
     }
 }

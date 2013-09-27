@@ -49,7 +49,7 @@ public class StatsManager {
     {
 //        Check if device exists
         deviceManager.getDevice(deviceId);
-        return statsDAO.save(stats);
+        return statsDAO.save(deviceId,stats);
     }
 
     @Nonnull
