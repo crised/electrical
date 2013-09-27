@@ -11,3 +11,6 @@ Security
 ---
 
 AuthFilter is attached to REST API proxy with hardcoded username and password which are sent in Basic Auth style.
+
+[rnicolau] Please check and edit below:
+To install the service copy the jenergy.conf file into /etc/init folder, along with the startup.sh script and the generated jar file
