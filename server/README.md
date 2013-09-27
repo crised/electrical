@@ -83,7 +83,7 @@ For production configuration like this would be required:
            <login-module code="Database" flag="optional">
                 <module-option name="dsJndiName" value="java:jboss/datasources/ElectricalDS"/>
                 <module-option name="principalsQuery" value="select password from users where email=?"/>
-                <module-option name="rolesQuery" value="select role,'Roles' from users where email=?"/>
+                <module-option name="rolesQuery" value="select user_roles.roles,'Roles' from users,user_roles where users.id=user_roles.user_id and users.email=?"/>
                 <module-option name="hashAlgorithm" value="SHA-512"/>
                 <module-option name="hashEncoding" value="hex"/>
                 <module-option name="password-stacking" value="true"/>
