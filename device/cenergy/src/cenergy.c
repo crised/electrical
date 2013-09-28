@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <libpq-fe.h>
-#include <modbus-rtu.h>
+#include <modbus/modbus-rtu.h>
 #include <errno.h>
 #include <string.h>
 #include <signal.h>

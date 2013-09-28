@@ -4,17 +4,13 @@ Prerequisites:
 
 install developement tools: sudo yum install gcc gcc-c++ gdb autoconf libtool postgresql-devel
 
-Build libmodbus as static library:
-Download sources from https://github.com/downloads/stephane/libmodbus/libmodbus-3.0.3.tar.gz
-./configure --enable-static
-make
-copy libmodbus.a file
-cp ./src/.libs/libmodbus.a <root of working dir>/device/energy_db_wd/lib/
-
+Libmodbus:
+sudo yum install http://mirror.symnds.com/distributions/gf/el/6/gf/x86_64/gf-release-6-5.gf.el6.noarch.rpm
+sudo yum install libmodbus-devel
 
 
 Build:
-gcc -I./lib/ -lpq -o "cenergy" ./src/cenergy.c ./lib/libmodbus.a
+gcc -I./lib/ -lpq -lmodbus -o "cenergy" ./src/cenergy.c
 
 
 Quick start for the database:
