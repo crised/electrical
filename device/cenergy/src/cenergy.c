@@ -161,7 +161,7 @@ void *watch_dog(void *threadarg)
 
     watch_counter++;
 
-    if (watch_counter > 1)
+    if (watch_counter > WATCHDOG_WARNING)
     {
       SYSLOG("Warning,  watchdog value is %d\n", watch_counter);
       if (watch_counter > WATCHDOG_TIMEOUT)
@@ -294,7 +294,7 @@ int main(int argc, char** argv)
         SYSLOG("read_from_Modbus failed\n");
         modbus_failed = 1;
       }
-      if (!write_to_DB(psql_connection, values, E_INSTANT_VALUES_RECORD))
+      if (!modbus_failed && !write_to_DB(psql_connection, values, E_INSTANT_VALUES_RECORD))
       {
         SYSLOG("write_to_DB failed\n");
         psql_failed = 1;
@@ -307,7 +307,7 @@ int main(int argc, char** argv)
         SYSLOG("read_from_Modbus failed\n");
         modbus_failed = 1;
       }
-      if (!write_to_DB(psql_connection, values, E_DEMAND_VALUES_RECORD))
+      if (!modbus_failed && !write_to_DB(psql_connection, values, E_DEMAND_VALUES_RECORD))
       {
         SYSLOG("write_to_DB failed\n");
         psql_failed = 1;
@@ -320,7 +320,7 @@ int main(int argc, char** argv)
         SYSLOG("read_from_Modbus failed\n");
         modbus_failed = 1;
       }
-      if (!write_to_DB(psql_connection, values, E_ENERGY_VALUES_RECORD))
+      if (!modbus_failed && !write_to_DB(psql_connection, values, E_ENERGY_VALUES_RECORD))
       {
         SYSLOG("write_to_DB failed\n");
         psql_failed = 1;
