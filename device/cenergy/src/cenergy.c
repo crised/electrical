@@ -138,28 +138,20 @@ pthread_t watchdog_thread;
 
 void ping_watchdog()
 {
-  int rl = pthread_mutex_trylock(&mutex);
-  if (rl)
-  {
-    SYSLOG("Failed to lock mutex with error %d\n", rl);
-  }
+  pthread_mutex_lock(&mutex);
   watch_counter = 0;
   pthread_mutex_unlock(&mutex);
 }
 
 void *watch_dog(void *threadarg)
 {
-  int rl;
   while (1)
   {
+    int watch_dog_value;
     sleep(1);
-    rl = pthread_mutex_trylock(&mutex);
-    if (rl)
-    {
-      SYSLOG("Failed to lock mutex with error %d\n", rl);
-    }
-
-    watch_counter++;
+    pthread_mutex_lock(&mutex);
+    watch_dog_value = watch_counter++;
+    pthread_mutex_unlock(&mutex);
 
     if (watch_counter > WATCHDOG_WARNING)
     {
@@ -170,8 +162,6 @@ void *watch_dog(void *threadarg)
         exit_nicely(psql_connection);
       }
     }
-
-    pthread_mutex_unlock(&mutex);
   }
   return NULL;
 }
