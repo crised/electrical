@@ -75,6 +75,6 @@ Cron Rule, 1 for each process, every 1 minute, crontab -e:
 UDEV Rules:
 
 Make a file /etc/udev/rules.d/100-usb.rules
- Contents:
-KERNEL=="ttyUSB0", MODE="0777"
-KERNEL=="ttyUSB1", MODE="0777"
+Contents:
+*KERNEL=="ttyUSB0", MODE="0777"
+*KERNEL=="ttyUSB1", MODE="0777"
