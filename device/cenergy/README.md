@@ -1,4 +1,3 @@
-
 Prerequisites:
 
 install developement tools: sudo yum install gcc gcc-c++ gdb autoconf libtool postgresql-devel
@@ -53,6 +52,9 @@ psql cenergy
 
 
 -------------copy from here-----------
+
+ALTER DATABASE electrical OWNER TO electrical;
+
 
 
 DROP TABLE instant;
