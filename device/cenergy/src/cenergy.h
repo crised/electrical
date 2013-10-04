@@ -36,7 +36,7 @@ enum E_VALUES_RECORD
 #define SERIAL_DATA_BITS  (8)
 #define SERIAL_STOP_BITS  (1)
 
-#define PSQL_CONNECTION_STR ("dbname = cenergy user = electrical password = electrical")
+#define PSQL_CONNECTION_STR ("dbname = cenergy user = postgres  password = ")
 
 typedef struct METER_REGISTER
 {
