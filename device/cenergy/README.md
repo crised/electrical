@@ -1,5 +1,3 @@
-
-
 Prerequisites:
 
 install developement tools: sudo yum install gcc gcc-c++ gdb autoconf libtool postgresql-devel
@@ -17,8 +15,15 @@ Quick start for the database:
 
 1. create a postgresql user:
 sudo su - postgres
+<<<<<<< HEAD
 
 input all prompted data then exit (use password "electrical")
+=======
+create user electrical;
+ALTER USER electrical WITH PASSWORD  'electrical';
+
+
+>>>>>>> f41f8b9a6779d195bb698a275fbf6cfb6f21f5bc
 
 if identification fails in the connect stage the you might need to edit 
 /var/lib/pgsql/data/pg_hba.conf file, change the METHOD from ident to 
@@ -52,6 +57,9 @@ psql cenergy
 
 
 -------------copy from here-----------
+
+ALTER DATABASE electrical OWNER TO electrical;
+
 
 
 DROP TABLE instant;
