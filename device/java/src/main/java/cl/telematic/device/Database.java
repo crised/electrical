@@ -168,9 +168,9 @@ public class Database {
     private Connection getConnection() throws SQLException
     {
         if (null == connection) {
-            String username = "electrical";
-            String password = "electrical";
-            String dbURL = "jdbc:postgresql://127.0.0.1:5432/electrical_device";
+            String username = "postgres";
+            String password = "";
+            String dbURL = "jdbc:postgresql://127.0.0.1:5432/cenergy";
             connection = DriverManager.getConnection(dbURL, username, password);
             connection.setAutoCommit(true);
         }
