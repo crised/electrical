@@ -17,7 +17,7 @@ Quick start for the database:
 
 1. create a postgresql user:
 sudo su - postgres
-createuser electrical -P
+
 input all prompted data then exit (use password "electrical")
 
 if identification fails in the connect stage the you might need to edit 
