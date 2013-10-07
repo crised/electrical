@@ -3,7 +3,7 @@
              xsi:schemaLocation="http://www.jboss.org/ironjacamar/schema http://docs.jboss.org/ironjacamar/schema/datasources_1_0.xsd">
     <!-- The datasource is bound into JNDI at this location. We reference 
         this in META-INF/persistence.xml -->
-    <datasource jndi-name="java:jboss/datasources/electrical" pool-name="electrical_pool" enabled="true" use-java-context="true">
+    <datasource jndi-name="java:jboss/datasources/electricalDS" pool-name="electrical_pool" enabled="true" use-java-context="true">
         <connection-url>jdbc:postgresql:electrical</connection-url>
         <driver>postgresql-jdbc4</driver>
     </datasource>

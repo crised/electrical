@@ -1,56 +1,100 @@
 <div class="container">
 
-    <h1>Device: {{ stats.deviceName }}</h1>
-
-    <div class="form-inline">
-        <label>
-            Start date
-            <input type="text" datepicker-popup="dd-MMMM-yyyy" ng-model="startDate" is-open="startDateOpened" datepicker-options="dateOptions"/>
-        </label>
-        <button class="btn" ng-click="openStartDate()"><i class="icon-calendar"></i></button>
-        <label>
-            End date
-            <input type="text" datepicker-popup="dd-MMMM-yyyy" ng-model="endDate" is-open="endDateOpened" datepicker-options="dateOptions"/>
-        </label>
-        <button class="btn" ng-click="openEndDate()"><i class="icon-calendar"></i></button>
-    </div>
     <div class="row">
         <div class="span12">
-            <accordion close-others="false">
-                <accordion-group heading="Main statistics" is-open="true">
-                    Voltage 1: <span class="badge">{{ stats.v1_voltage }}</span><br/>
-                    Voltage 2: <span class="badge">{{ stats.v2_voltage }}</span><br/>
-                    Voltage 3: <span class="badge">{{ stats.v3_voltage }}</span><br/>
-                    Power factor: <span class="badge">{{ stats.total_pf }}</span><br/>
-                    Instant power: <span class="badge">{{ stats.total_kw }}</span><br/>
-                    Maximum Active Power for the Range: <span class="badge">{{ stats.kw_import_block_demand.max }}</span><br/>
-                    Maximum Active Power in between 18:00 - 23:00: <span class="badge">{{ stats.activePowerTotalMax18_23 }}</span><br/>
+            <h1>{{ stats.deviceName }}</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="span12">
+
+            <br/>
+            Voltaje Fase 1: <span class="badge">{{ stats.v1_voltage }}</span>
+            Voltaje Fase 2: <span class="badge">{{ stats.v2_voltage }}</span>
+            Voltaje Fase 3: <span class="badge">{{ stats.v3_voltage }}</span>
+            <br/>
+        </div>
+
+    </div>
+
+    <div class="row span12">
+        <br/>
+
+        <div class="form-inline">
+            <label>
+                Start date
+                <input type="text" datepicker-popup="dd-MMMM-yyyy" ng-model="startDate" is-open="startDateOpened"
+                       datepicker-options="dateOptions"/>
+            </label>
+            <button class="btn" ng-click="openStartDate()"><i class="icon-calendar"></i></button>
+            <label>
+                End date
+                <input type="text" datepicker-popup="dd-MMMM-yyyy" ng-model="endDate" is-open="endDateOpened"
+                       datepicker-options="dateOptions"/>
+            </label>
+            <button class="btn" ng-click="openEndDate()"><i class="icon-calendar"></i></button>
+        </div>
+    </div>
+    <div class="row">
+
+        <div class="span12">
+
+            <accordion close-others="false" >
+
+                <accordion-group heading="Energia" is-open="true">
+                    <table>
+                        <tbody>
+                        <tr>
+                            <td>Energia Total: </td>
+                            <td><span class="badge">{{ stats.kwh_import }}</span></td>
+                        </tr>
+                        <tr>
+                            <td>Energia Fase 1: </td>
+                            <td><span class="badge">{{ stats.kwh_import_l1 }}</span></td>
+                        </tr>
+                        <tr>
+                            <td>Energia Fase 2: </td>
+                            <td><span class="badge">{{ stats.kwh_import_l2 }}</span></td>
+                        </tr>
+                        <tr>
+                            <td>Energia Fase 3: </td>
+                            <td><span class="badge">{{ stats.kwh_import_l3 }}</span></td>
+                        </tr>
+                        </tbody>
+                    </table>
                 </accordion-group>
-                <accordion-group heading="Demand Values">
+
+                <accordion-group heading="Demanda Maxima" is-open="true">
+                    Demanda Maxima: <span
+                        class="badge">{{ stats.kw_import_block_demand.max }}</span><br/>
+                    Demanda Maxima 18:00 - 23:00: <span class="badge">{{ stats.activePowerTotalMax18_23 }}</span><br/>
+                </accordion-group>
+                <accordion-group heading="Potencias Totales" is-open="true">
                     <table>
                         <thead>
                         <tr>
                             <td>Variable</td>
-                            <td>AVG</td>
-                            <td>MIN</td>
-                            <td>MAX</td>
+                            <td>Prom</td>
+                            <td>Min</td>
+                            <td>Max</td>
                         </tr>
                         </thead>
                         <tbody>
                         <tr>
-                            <td>Active Total Power</td>
+                            <td>Potencia Activa</td>
                             <td><span class="badge">{{ stats.kw_import_block_demand.avg }}</span></td>
                             <td><span class="badge">{{ stats.kw_import_block_demand.min }}</span></td>
                             <td><span class="badge">{{ stats.kw_import_block_demand.max }}</span></td>
                         </tr>
                         <tr>
-                            <td>Reactive Total Power</td>
+                            <td>Potencia Reactiva</td>
                             <td><span class="badge">{{ stats.kvar_import_block_demand.avg }}</span></td>
                             <td><span class="badge">{{ stats.kvar_import_block_demand.min }}</span></td>
                             <td><span class="badge">{{ stats.kvar_import_block_demand.max }}</span></td>
                         </tr>
                         <tr>
-                            <td>Apparent Total Power</td>
+                            <td>Potencia Aparente</td>
                             <td><span class="badge">{{ stats.kva_block_demand.avg }}</span></td>
                             <td><span class="badge">{{ stats.kva_block_demand.min }}</span></td>
                             <td><span class="badge">{{ stats.kva_block_demand.max }}</span></td>
@@ -58,28 +102,7 @@
                         </tbody>
                     </table>
                 </accordion-group>
-                <accordion-group heading="Energy Values">
-                    <table>
-                        <tbody>
-                        <tr>
-                            <td>Total Energy</td>
-                            <td><span class="badge">{{ stats.kwh_import }}</span></td>
-                        </tr>
-                        <tr>
-                            <td>Energy Line 1</td>
-                            <td><span class="badge">{{ stats.kwh_import_l1 }}</span></td>
-                        </tr>
-                        <tr>
-                            <td>Energy Line 2</td>
-                            <td><span class="badge">{{ stats.kwh_import_l2 }}</span></td>
-                        </tr>
-                        <tr>
-                            <td>Energy Line 3</td>
-                            <td><span class="badge">{{ stats.kwh_import_l3 }}</span></td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </accordion-group>
+
             </accordion>
         </div>
     </div>
