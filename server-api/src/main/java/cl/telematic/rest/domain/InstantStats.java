@@ -1,10 +1,11 @@
 package cl.telematic.rest.domain;
 
+import java.sql.Timestamp;
 import java.util.Date;
 
 public class InstantStats {
 
-    private Date createdOn;
+    private Timestamp createdOn;
 
     private Long total_kw;
 
@@ -16,12 +17,12 @@ public class InstantStats {
 
     private Long v3_voltage;
 
-    public Date getCreatedOn()
+    public Timestamp getCreatedOn()
     {
         return createdOn;
     }
 
-    public void setCreatedOn(Date createdOn)
+    public void setCreatedOn(Timestamp createdOn)
     {
         this.createdOn = createdOn;
     }

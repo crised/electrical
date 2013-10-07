@@ -35,7 +35,7 @@ public class Database {
         while (resultSet.next()) {
             final LocalDemandStats stats = new LocalDemandStats();
             stats.setId(resultSet.getLong(1));
-            stats.setCreatedOn(resultSet.getDate(2));
+            stats.setCreatedOn(resultSet.getTimestamp(2));
             stats.setKw_import_block_demand(resultSet.getLong(3));
             stats.setKvar_import_block_demand(resultSet.getLong(4));
             stats.setKva_block_demand(resultSet.getLong(5));
@@ -55,7 +55,7 @@ public class Database {
         while (resultSet.next()) {
             final LocalEnergyStats stats = new LocalEnergyStats();
             stats.setId(resultSet.getLong(1));
-            stats.setCreatedOn(resultSet.getDate(2));
+            stats.setCreatedOn(resultSet.getTimestamp(2));
             stats.setKwh_import(resultSet.getLong(3));
             stats.setKwh_import_l1(resultSet.getLong(4));
             stats.setKwh_import_l2(resultSet.getLong(5));
@@ -76,7 +76,7 @@ public class Database {
         while (resultSet.next()) {
             final LocalInstantStats stats = new LocalInstantStats();
             stats.setId(resultSet.getLong(1));
-            stats.setCreatedOn(resultSet.getDate(2));
+            stats.setCreatedOn(resultSet.getTimestamp(2));
             stats.setTotal_kw(resultSet.getLong(3));
             stats.setTotal_pf(resultSet.getLong(4));
             stats.setV1_voltage(resultSet.getLong(5));

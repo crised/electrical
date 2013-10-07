@@ -1,10 +1,11 @@
 package cl.telematic.rest.domain;
 
+import java.sql.Timestamp;
 import java.util.Date;
 
 public class EnergyStats {
 
-    private Date createdOn;
+    private Timestamp createdOn;
 
     private Long kwh_import;
 
@@ -14,12 +15,12 @@ public class EnergyStats {
 
     private Long kwh_import_l3;
 
-    public Date getCreatedOn()
+    public Timestamp getCreatedOn()
     {
         return createdOn;
     }
 
-    public void setCreatedOn(Date createdOn)
+    public void setCreatedOn(Timestamp createdOn)
     {
         this.createdOn = createdOn;
     }

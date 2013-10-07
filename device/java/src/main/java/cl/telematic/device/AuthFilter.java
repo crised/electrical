@@ -11,8 +11,8 @@ public class AuthFilter implements ClientRequestFilter {
     @Override
     public void filter(ClientRequestContext requestContext) throws IOException
     {
-        final String username = "device";
-        final String password = "ecived";
+        final String username = "device"; //device
+        final String password = "ecived"; //ecived
         String encodedCredentials = Base64.encodeBytes((username + ":" + password).getBytes());
         requestContext.getHeaders().putSingle("Authorization", "Basic " + encodedCredentials);
     }
