@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?><!-- This is an unmanaged datasource. It should be used for proofs of concept
-    or testing only.-->
+<?xml version="1.0" encoding="UTF-8"?>
 <datasources xmlns="http://www.jboss.org/ironjacamar/schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://www.jboss.org/ironjacamar/schema http://docs.jboss.org/ironjacamar/schema/datasources_1_0.xsd">
     <!-- The datasource is bound into JNDI at this location. We reference 
         this in META-INF/persistence.xml -->
-    <datasource jndi-name="java:jboss/datasources/ElectricalDS" pool-name="ElectricalDS_Pool" enabled="true" use-java-context="true">
+    <datasource jndi-name="java:jboss/datasources/electrical" pool-name="electrical_pool" enabled="true" use-java-context="true">
         <connection-url>jdbc:postgresql:electrical</connection-url>
         <driver>postgresql-jdbc4</driver>
     </datasource>
