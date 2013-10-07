@@ -7,10 +7,6 @@
     <datasource jndi-name="java:jboss/datasources/ElectricalDS" pool-name="ElectricalDS_Pool" enabled="true" use-java-context="true">
         <connection-url>jdbc:postgresql:electrical</connection-url>
         <driver>postgresql-jdbc4</driver>
-        <security>
-            <user-name>electrical</user-name>
-            <password>electrical</password>
-        </security>
     </datasource>
 </datasources>
  

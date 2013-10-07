@@ -31,7 +31,7 @@ public class Main {
         if (args.length < 2) {
             System.err.println("Usage:");
             System.err.println("\tjava -cp ... -jar " + Main.class.getCanonicalName() + " DEVICE_ID REST_API_URL");
-            System.err.println("\n\ti.e. java -cp ... -jar " + Main.class.getCanonicalName() + " 1 http://localhost:8080/electricmeter/rest");
+            System.err.println("\n\ti.e. java -cp ... -jar " + Main.class.getCanonicalName() + " 1 http://23.21.60.18:8080/electricmeter/rest");
         }
         final Long deviceId = Long.parseLong(args[0]);
         final URI restApiBaseURL = new URI(args[1]);
