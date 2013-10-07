@@ -28,14 +28,16 @@ static void exit_nicely(PGconn *conn)
 
 int read_modbus_32b(modbus_t* ctx, int addr, uint32_t* value, int is_signed)
 {
-  uint16_t reg[2];
-  int rc;
+  uint16_t regL, regH;
+  int rcL, rcH;
   int retries = MAX_MODBUS_RETRIES;
   while (--retries)
   {
-    rc = modbus_read_registers(ctx, addr, 2, reg);
-    usleep(MAX_MODBUS_TR_TIMING * 2); //max transaction timing.
-    if ( rc == 2)
+    rcL = modbus_read_registers(ctx, addr,     1, &regL);
+    usleep(MAX_MODBUS_TR_TIMING);
+    rcH = modbus_read_registers(ctx, addr + 1, 1, &regH);
+    usleep(MAX_MODBUS_TR_TIMING);
+    if ((rcL == 1) && (rcH == 1))
     {
       break;
     }
@@ -47,8 +49,8 @@ int read_modbus_32b(modbus_t* ctx, int addr, uint32_t* value, int is_signed)
   }
   else
   {
-    *value = reg[1] * 65536 + reg[0];
-    //printf("modbus read from %d: %u,%u = %u\n", addr, reg[0], reg[1], *value);
+    *value = regH * 65536 + regL;
+    //printf("modbus read from %d: %u,%u = %u\n", addr, regL, regH, *value);
     return 1;
   }
 }
