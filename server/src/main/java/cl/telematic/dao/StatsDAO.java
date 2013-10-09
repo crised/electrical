@@ -66,7 +66,15 @@ public class StatsDAO {
         } catch (NoResultException e) {
             result = null;
         }
-        return toDeviceStats(device, result, energyStatsA, energyStatsB, activePowerTotalMax18_23);
+        Date lastUpdate;
+        try {
+            lastUpdate = entityManager.createQuery("select max(createdOn) from StatsEntry where device.id=:id", Date.class)
+                .setParameter("id", device.getId())
+                .getSingleResult();
+        } catch (NoResultException e) {
+            lastUpdate = null;
+        }
+        return toDeviceStats(device, result, energyStatsA, energyStatsB, activePowerTotalMax18_23, lastUpdate);
     }
 
     @Nullable
@@ -115,7 +123,7 @@ public class StatsDAO {
 
     @Nonnull
     private DeviceStats toDeviceStats(@Nonnull Device device, @Nullable Object[] result, EnergyStats energyStatsA, EnergyStats energyStatsB,
-                                      @Nullable Long activePowerTotalMax18_23)
+                                      @Nullable Long activePowerTotalMax18_23, @Nullable Date lastUpdate)
     {
         final DeviceStats deviceStats = new DeviceStats();
         if (null != result) {
@@ -149,6 +157,12 @@ public class StatsDAO {
             deviceStats.setV1_voltage(instantStats.getV1_voltage());
             deviceStats.setV2_voltage(instantStats.getV2_voltage());
             deviceStats.setV3_voltage(instantStats.getV3_voltage());
+            if (lastUpdate != null && instantStats.getCreatedOn() != null && lastUpdate.before(instantStats.getCreatedOn())) {
+                deviceStats.setLastUpdate(instantStats.getCreatedOn());
+            }
+        }
+        if (null == deviceStats.getLastUpdate()) {
+            deviceStats.setLastUpdate(lastUpdate);
         }
         return deviceStats;
     }

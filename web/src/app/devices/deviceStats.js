@@ -1,4 +1,4 @@
-devices.controller('DeviceStatsCtrl', function ($scope, $routeParams, $timeout, DeviceDAO)
+devices.controller('DeviceStatsCtrl', function ($scope, $routeParams, $timeout, $window, DeviceDAO)
 {
     $scope.dateOptions = {
         'year-format': "'yy'",
@@ -8,6 +8,7 @@ devices.controller('DeviceStatsCtrl', function ($scope, $routeParams, $timeout, 
     var STAT_TYPE_AVG = "avg";
     var STAT_TYPE_MIN = "min";
     var STAT_TYPE_MAX = "max";
+    var refreshInterval;
 
     $scope.startDate = new Date();
     $scope.endDate = new Date();
@@ -88,6 +89,15 @@ devices.controller('DeviceStatsCtrl', function ($scope, $routeParams, $timeout, 
             $scope.stats = stats;
         });
     }
+
+    refreshInterval = $window.setInterval(refreshStats, 5000);
+
+    $scope.$on("$destroy", function ()
+    {
+        if (undefined != refreshInterval) {
+            $window.clearInterval(refreshInterval)
+        }
+    });
 
     refreshStats();
 

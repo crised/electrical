@@ -1,5 +1,7 @@
 package cl.telematic.rest.domain;
 
+import java.util.Date;
+
 public class DeviceStats {
 
     private Long activePowerTotalMax18_23;
@@ -21,6 +23,8 @@ public class DeviceStats {
     private Long kwh_import_l2;
 
     private Long kwh_import_l3;
+
+    private Date lastUpdate;
 
     private Long total_kw;
 
@@ -130,6 +134,16 @@ public class DeviceStats {
     public void setKwh_import_l3(Long kwh_import_l3)
     {
         this.kwh_import_l3 = kwh_import_l3;
+    }
+
+    public Date getLastUpdate()
+    {
+        return lastUpdate;
+    }
+
+    public void setLastUpdate(Date lastUpdate)
+    {
+        this.lastUpdate = lastUpdate;
     }
 
     public Long getTotal_kw()
