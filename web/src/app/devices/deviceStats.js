@@ -16,20 +16,24 @@ devices.controller('DeviceStatsCtrl', function ($scope, $routeParams, $timeout, 
     $scope.statType = STAT_TYPE_AVG;
     $scope.phase = 1;
 
-    $scope.openStartDate = function ()
+    $scope.toggleStartDate = function ()
     {
-        $timeout(function ()
-        {
-            $scope.startDateOpened = true;
-        });
+        if (!$scope.startDateOpened) {
+            $timeout(function ()
+            {
+                $scope.startDateOpened = !$scope.startDateOpened;
+            });
+        }
     };
 
-    $scope.openEndDate = function ()
+    $scope.toggleEndDate = function ()
     {
-        $timeout(function ()
+        if (!$scope.endDateOpened) {
+            $timeout(function ()
         {
-            $scope.endDateOpened = true;
+            $scope.endDateOpened = !$scope.endDateOpened;
         });
+        }
     };
 
     var getStatValue = function (prefix)
