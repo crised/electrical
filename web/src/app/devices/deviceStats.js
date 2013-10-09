@@ -90,7 +90,7 @@ devices.controller('DeviceStatsCtrl', function ($scope, $routeParams, $timeout, 
         });
     }
 
-    refreshInterval = $window.setInterval(refreshStats, 5000);
+    refreshInterval = $window.setInterval(refreshStats, 30000);
 
     $scope.$on("$destroy", function ()
     {
