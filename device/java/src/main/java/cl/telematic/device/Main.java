@@ -1,9 +1,11 @@
 package cl.telematic.device;
 
 import cl.telematic.rest.StatsResource;
+import org.apache.http.conn.HttpHostConnectException;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Response;
 import java.net.URI;
@@ -45,34 +47,13 @@ public class Main {
         //noinspection InfiniteLoopStatement
         do {
             System.out.println("Checking db...");
-            try {
-                System.out.println("Entering demand...");
-
-                sendDemandStats(database, statsResource, deviceId);
-
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-            try {
-                System.out.println("Entering Energy...");
-
-                sendEnergyStats(database, statsResource, deviceId);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-            try {
-                System.out.println("Entering Instant...");
-
-                sendInstantStats(database, statsResource, deviceId);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+            sendStats(deviceId, statsResource, database);
             System.out.println("...done. Sleeping.");
-//                    Wait for 1 minute
+//            Wait for 1 minute
             try {
-                Thread.sleep(1000 * 60);
+                Thread.sleep(100 * 60);
             } catch (InterruptedException ignore) {
-//                        We've been interrupted, no problem
+//                We've been interrupted, no problem
             }
         } while (true);
     }
@@ -111,5 +92,48 @@ public class Main {
         }
         System.out.println("Sent " + statses.size() + " instant records");
         database.removeInstantStats(statses);
+    }
+
+    private static void sendStats(Long deviceId, StatsResource statsResource, Database database)
+    {
+        try {
+            System.out.println("Entering demand...");
+            sendDemandStats(database, statsResource, deviceId);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (ProcessingException e) {
+            if (e.getCause() instanceof HttpHostConnectException) {
+                e.printStackTrace();
+                return;
+            } else {
+                throw e;
+            }
+        }
+        try {
+            System.out.println("Entering Energy...");
+            sendEnergyStats(database, statsResource, deviceId);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (ProcessingException e) {
+            if (e.getCause() instanceof HttpHostConnectException) {
+                e.printStackTrace();
+                return;
+            } else {
+                throw e;
+            }
+        }
+        try {
+            System.out.println("Entering Instant...");
+            sendInstantStats(database, statsResource, deviceId);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (ProcessingException e) {
+            if (e.getCause() instanceof HttpHostConnectException) {
+                e.printStackTrace();
+//                return;
+            } else {
+                throw e;
+            }
+        }
     }
 }
