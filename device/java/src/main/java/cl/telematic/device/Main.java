@@ -4,6 +4,8 @@ import cl.telematic.rest.StatsResource;
 import org.apache.http.conn.HttpHostConnectException;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
@@ -16,12 +18,14 @@ import java.util.List;
 
 public class Main {
 
+    private static Logger LOGGER = LoggerFactory.getLogger(Main.class);
+
     private static void handleResponse(String stasName, Response response, Iterator<?> iterator)
     {
         if (Response.Status.OK.getStatusCode() != response.getStatus()) {
-            System.err.println("Cannot send " + stasName + " stats. Response code:" + response.getStatusInfo());
+            LOGGER.error("Cannot send " + stasName + " stats. Response code:" + response.getStatusInfo());
             if (response.hasEntity()) {
-                System.err.println(response.readEntity(String.class));
+                LOGGER.error(response.readEntity(String.class));
             }
             iterator.remove();
         }
@@ -30,6 +34,7 @@ public class Main {
 
     public static void main(String[] args) throws URISyntaxException
     {
+        LOGGER.info("Starting client device, java part");
         if (args.length < 2) {
             System.err.println("Usage:");
             System.err.println("\tjava -cp ... -jar " + Main.class.getCanonicalName() + " DEVICE_ID REST_API_URL");
@@ -46,9 +51,9 @@ public class Main {
 
         //noinspection InfiniteLoopStatement
         do {
-            System.out.println("Checking db...");
+            LOGGER.info("Checking db...");
             sendStats(deviceId, statsResource, database);
-            System.out.println("...done. Sleeping.");
+            LOGGER.info("...done. Sleeping.");
 //            Wait for 1 minute
             try {
                 Thread.sleep(100 * 60);
@@ -66,7 +71,7 @@ public class Main {
             final Response response = statsResource.save(deviceId, stats);
             handleResponse("demand", response, iterator);
         }
-        System.out.println("Sent " + statses.size() + " demand records");
+        LOGGER.info("Sent " + statses.size() + " demand records");
         database.removeDemandStats(statses);
     }
 
@@ -78,7 +83,7 @@ public class Main {
             final Response response = statsResource.save(deviceId, stats);
             handleResponse("energy", response, iterator);
         }
-        System.out.println("Sent " + statses.size() + " energy records");
+        LOGGER.info("Sent " + statses.size() + " energy records");
         database.removeEnergyStats(statses);
     }
 
@@ -90,50 +95,49 @@ public class Main {
             final Response response = statsResource.save(deviceId, stats);
             handleResponse("instant", response, iterator);
         }
-        System.out.println("Sent " + statses.size() + " instant records");
+        LOGGER.info("Sent " + statses.size() + " instant records");
         database.removeInstantStats(statses);
     }
 
     private static void sendStats(Long deviceId, StatsResource statsResource, Database database)
     {
         try {
-            System.out.println("Entering demand...");
+            LOGGER.info("Entering demand...");
             sendDemandStats(database, statsResource, deviceId);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } catch (ProcessingException e) {
             if (e.getCause() instanceof HttpHostConnectException) {
-                e.printStackTrace();
+                LOGGER.error("Cannot send demand stats", e);
                 return;
             } else {
                 throw e;
             }
         }
         try {
-            System.out.println("Entering Energy...");
+            LOGGER.info("Entering Energy...");
             sendEnergyStats(database, statsResource, deviceId);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } catch (ProcessingException e) {
             if (e.getCause() instanceof HttpHostConnectException) {
-                e.printStackTrace();
+                LOGGER.error("Cannot send demand stats", e);
                 return;
             } else {
                 throw e;
             }
-        }
-        try {
-            System.out.println("Entering Instant...");
-            sendInstantStats(database, statsResource, deviceId);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } catch (ProcessingException e) {
-            if (e.getCause() instanceof HttpHostConnectException) {
-                e.printStackTrace();
+        } try {
+        LOGGER.info("Entering Instant...");
+        sendInstantStats(database, statsResource, deviceId);
+    } catch (SQLException e) {
+        throw new RuntimeException(e);
+    } catch (ProcessingException e) {
+        if (e.getCause() instanceof HttpHostConnectException) {
+            LOGGER.error("Cannot send demand stats", e);
 //                return;
-            } else {
-                throw e;
-            }
+        } else {
+            throw e;
         }
+    }
     }
 }

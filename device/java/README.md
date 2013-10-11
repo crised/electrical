@@ -14,3 +14,13 @@ AuthFilter is attached to REST API proxy with hardcoded username and password wh
 
 [rnicolau] Please check and edit below:
 To install the service copy the jenergy.conf file into /etc/init folder, along with the startup.sh script and the generated jar file
+
+Logging
+---
+
+Java module logs to syslog using logback's SyslogAppender.
+Make sure to configure syslog-ng to allow UDP:
+
+```
+source src { system(); internal(); udp(ip(127.0.0.1)); };
+```
