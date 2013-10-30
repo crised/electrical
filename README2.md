@@ -17,6 +17,25 @@ Inside the supermarket, 2 RS-485/Modbus networks are proposed.
 
 2 RS-485 to 1 USB physical port, leads to two: /dev/ttyUSB0 and /dev/ttyUSB1
 
+Probably no 2 supermarkets would have the same configuration. @radu proposes to use an xml, so C program 
+could read an xml for supermarket configurations. We should not focus in makin 1 size fits all, we could
+have different C program in each supermarket, but we should keep them as similar as possible.
+XML also allows to modify supermarket on the fly as well.
+
+Example XML configuration:
+
+```xml
+<configs>
+   <Name: SouthWalmart />
+   <Numberofelectricmeters: 3/>
+   <NumberofAnalogMeters: 2/>
+      <ChannelsInstalled: 2/>
+      .
+      .
+      .
+</configs>
+```
+
 Electric Network
 ----------------
 
@@ -30,7 +49,7 @@ Sensors Network
 ---------------
 
 To bring reality into digital world, 
-we use 3 different types of data acquisition equipment, we use Advantech 
+we use 3 different types of *daqs* (data acquisition equipment), we use Advantech 
 [ADAM 4000][1]
 series. A supermarket should have one of each kind, but it's not fixed. Each meter should have it's own DB table. 
 
@@ -46,14 +65,79 @@ Luxmeter can output both 0 to 100 mv or 4 to 20 ma. It's better to pick only one
 
 * [ADAM-4055: ][4]
 This module provide our only controlling capability since it has outputs. Digital Input / Output module. 
-8 Input channels can take 10-50 VDC, 8 Output channels can deliver from 5 to 40 VDC. Digital Inputs might be refrigator 
+8 Input channels can take 10-50 VDC, 8 Output channels can deliver from 5 to 40 VDC. Digital Inputs might be refrigerator 
 doors status (open/closed), so for example if a door is open for more than 1 hour, we might push a button on the web
 interface to trigger for example a local horn/siren.
+
+Temperature Readings
+--------------------
+
+Temperature probe to use (could vary) [AKS 12][5]
+
+Example Table: TEMP1
+
+<table>
+  <tr>
+    <th>ID</th><th>Temp1</th><th>Temp2</th><th>Temp3</th><th>Temp4</th><th>Temp5</th><th>Temp6</th><th>TIMESTAMP</th>
+  </tr>
+  <tr>
+    <td>1</td><td>-4</td><td>-2</td><td></td><td></td><td></td><td></td><td>2013-30-10 14:59:30.252</td>
+  </tr>
+  <tr>
+  <td>2</td><td>-1</td><td>-3</td><td></td><td></td><td></td><td></td><td>2013-30-10 15:05:30.252</td>
+  </tr>
+</table>
+
+Lux Readings
+------------
+
+[Light Sensor][6]
+
+Example  Table: LUX1
+
+<table>
+  <tr>
+    <th>ID</th><th>Lux1</th><th>Lux2</th><th>Lux3</th><th>Lux4</th><th>Lux5</th><th>Lux6</th><th>Lux7</th><th>Lux8</th><th>TIMESTAMP</th>
+  </tr>
+  <tr>
+    <td>1</td><td>300</td><td>500</td><td>
+    </td><td></td><td></td><td></td><td>
+    </td><td></td><td>2013-30-10 14:59:30.252</td>
+  </tr>
+  <tr>
+    <td>1</td><td>350</td><td>440</td><td></td><td></td><td></td><td></td>
+    <td></td><td></td><td>2013-30-10 15:05:30.252</td>
+  </tr>
+</table>
+
+Open/Closed Readings
+--------------------
+
+Door open closed [switch][7] example.
+
+This logic is different from others, because we cannot only read to the device, we can write as well.
+Write to the daq means controlling something. We can have the *NUC* query a specific URL like:
+
+* /supermarket1/control2/chann2/ every 5 minutes, with a boolean variable. 
+* NUC should read that value and compare it to the actual value, if it's different, write to modbus register.
+* NUC should read last stat and report to the server.
+
+
+
+
+
+
 
 Server Side
 ===========
 
-We need to expand what is done now, they basically need a dashboard with graphs. 
+We need to expand what is done now, they basically need a good dashboard.
+
+* Graphs, we need a good library that suits AngularJS. [Google Chart][8] seems simple to implement. 
+We dont' need complex graphs, I like the look of simplistic things.
+* Authentication: Must drop Basic and switch to our own authentication, since we use ssl, this should be easy.
+* Control Logic, a URL should be available for each PC in each supermarket, to query if new actions are to be performed.
+* Keep the Calendar at all times.
 
 It is extremely important to keep in mind **ZERO UNNEEDED LINE OF CODE** although comments are welcome.
 
@@ -68,7 +152,10 @@ It is extremely important to keep in mind **ZERO UNNEEDED LINE OF CODE** althoug
 [2]: http://www.advantech.com/products/ADAM-4015/mod_3DF2523A-44C4-40E7-BFB6-B44B214DF8A8.aspx
 [3]: http://www.advantech.com/products/ADAM-4017%2B/mod_10FD9E9C-8E8A-42F2-B749-A395F8426262.aspx
 [4]: http://www.advantech.com/products/ADAM-4055/mod_FD19E628-4EA5-4C16-915C-5CEEEF2FB65C.aspx
-
+[5]: http://www.ra.danfoss.com/TechnicalInfo/Literature/Manuals/01/RK0YG502_AKS.pdf
+[6]: http://www.ums-muc.de/fileadmin/produkt_downloads/Klima/Lux-1_P.jpg
+[7]: http://www.eurotruck-importers.com/images/0038205010.jpg
+[8]: http://bouil.github.io/angular-google-chart/
 
 
 
