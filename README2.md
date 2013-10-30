@@ -120,7 +120,7 @@ Write to the daq means controlling something. We can have the *NUC* query a spec
 
 * /supermarket1/control2/chann2/ every 5 minutes, with a boolean variable. 
 * NUC should read that value and compare it to the actual value, if it's different, write to modbus register.
-* NUC should read last stat and report to the server.
+* NUC should read last stat and report to the server. server should keep track of the user that did this.
 
 
 
