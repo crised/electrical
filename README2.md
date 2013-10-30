@@ -138,6 +138,8 @@ We dont' need complex graphs, I like the look of simplistic things.
 * Authentication: Must drop Basic and switch to our own authentication, since we use ssl, this should be easy.
 * Control Logic, a URL should be available for each PC in each supermarket, to query if new actions are to be performed.
 * Keep the Calendar at all times.
+* Implement mail alarms. For example temperature reading, should be within tresholds if it escapes that range, then
+alarm e-mail should be sent.
 
 It is extremely important to keep in mind **ZERO UNNEEDED LINE OF CODE** although comments are welcome.
 
