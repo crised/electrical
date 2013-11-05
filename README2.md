@@ -25,6 +25,7 @@ XML also allows to modify supermarket on the fly as well.
 
 Example XML configuration:
 Perhaps it's better to use different header files.
+
 ```xml
 <configs>
    <Name: SouthWalmart />
@@ -57,6 +58,8 @@ Perhaps it's better to use different header files.
       .
 </configs>
 ```
+
+Offset and Multiplication values refer to sum/substraction and multiplication of the value read before saving to db.
 
 Electric Network
 ----------------
