@@ -22,14 +22,36 @@ could read an xml for supermarket configurations. We should not focus in makin 1
 have different C program in each supermarket, but we should keep them as similar as possible.
 XML also allows to modify supermarket on the fly as well.
 
-Example XML configuration:
 
+Example XML configuration:
+Perhaps it's better to use different header files.
 ```xml
 <configs>
    <Name: SouthWalmart />
-   <Numberofelectricmeters: 3/>
-   <NumberofAnalogMeters: 2/>
-      <ChannelsInstalled: 2/>
+   <device: 1>
+     <modbus_address: 11/>
+     <register>
+       <number: 12563 />
+       <number_of_registers: 1/>
+       <offset value: 0/>
+       <multiplication value: 1/>
+    </register>
+      <register>
+       <number: 12564 />
+       <number_of_registers: 2/>
+       <offset value: 0/>
+       <multiplication value: 0.5/>
+    </register>
+  </device>
+     <device: 2>
+     <modbus_address: 13/>
+     <register>
+       <number: 12561 />
+       <number_of_registers: 1/>
+       <offset value: 0/>
+       <multiplication value: 1/>
+    </register>
+  </device>
       .
       .
       .
